@@ -1,0 +1,3059 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seguimiento ADSO 3389010 — Dashboard Premium</title>
+
+<!-- Modern Typography -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+<!-- Lucide Vector Icons CDN -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<!-- SheetJS Excel Parser CDN -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+/* ==========================================================================
+   DESIGN SYSTEM & THEME TOKENS
+   ========================================================================== */
+:root {
+  --bg-app: #090d16;
+  --bg-surface: #111726;
+  --bg-surface-glass: rgba(17, 23, 38, 0.75);
+  --bg-card: #161e31;
+  --bg-card-hover: #1d273f;
+  --bg-subtle: #222d48;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(99, 102, 241, 0.35);
+  
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+  
+  --brand-sena: #39a900;
+  --brand-sena-glow: rgba(57, 169, 0, 0.4);
+  
+  --accent-primary: #6366f1;
+  --accent-secondary: #8b5cf6;
+  --accent-soft: rgba(99, 102, 241, 0.15);
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  
+  --good: #10b981;
+  --good-soft: rgba(16, 185, 129, 0.15);
+  --good-glow: rgba(16, 185, 129, 0.3);
+  
+  --warn: #f59e0b;
+  --warn-soft: rgba(245, 158, 11, 0.15);
+  --warn-glow: rgba(245, 158, 11, 0.3);
+  
+  --bad: #ef4444;
+  --bad-soft: rgba(239, 68, 68, 0.15);
+  --bad-glow: rgba(239, 68, 68, 0.3);
+  
+  --sidebar-width: 270px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.25);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.35);
+  --shadow-lg: 0 20px 48px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.25);
+}
+
+:root[data-theme="light"] {
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-glass: rgba(255, 255, 255, 0.85);
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-subtle: #f1f5f9;
+  --border: #e2e8f0;
+  --border-glow: rgba(99, 102, 241, 0.25);
+  
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-faint: #94a3b8;
+  
+  --accent-primary: #4f46e5;
+  --accent-secondary: #7c3aed;
+  --accent-soft: rgba(79, 70, 229, 0.08);
+  
+  --good: #059669;
+  --good-soft: #ecfdf5;
+  --warn: #d97706;
+  --warn-soft: #fffbeb;
+  --bad: #dc2626;
+  --bad-soft: #fef2f2;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, .font-heading {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.num {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Vector icon sizing */
+.lucide {
+  width: 1.2em;
+  height: 1.2em;
+  stroke-width: 2.2;
+  vertical-align: -0.15em;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+/* ==========================================================================
+   HEADER BAR & TOP NAVIGATION
+   ========================================================================== */
+.inst-header {
+  background: linear-gradient(90deg, #0f172a 0%, #064e3b 50%, #14532d 100%);
+  color: #ffffff;
+  padding: 10px 28px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+  position: relative;
+  z-index: 40;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.inst-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sena-logo-badge {
+  background: var(--brand-sena);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 0 16px var(--brand-sena-glow);
+}
+
+.divider-dot {
+  opacity: 0.4;
+}
+
+.inst-title {
+  font-weight: 600;
+}
+
+.inst-sub {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+.inst-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+}
+
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #34d399;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #34d399;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 7px rgba(52, 211, 153, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+
+/* ==========================================================================
+   APP LAYOUT
+   ========================================================================== */
+.app-container {
+  display: flex;
+  min-height: calc(100vh - 44px);
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 44px;
+  height: calc(100vh - 44px);
+  z-index: 30;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+  padding: 0 8px 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebar-brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.sidebar-title {
+  font-size: 17px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--text-main), var(--accent-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.2;
+}
+
+.sidebar-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.nav-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.nav-button .nav-icon {
+  font-size: 18px;
+  color: var(--text-faint);
+  transition: color 0.2s;
+}
+
+.nav-button:hover {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+  transform: translateX(3px);
+}
+
+.nav-button:hover .nav-icon {
+  color: var(--accent-primary);
+}
+
+.nav-button.active {
+  background: var(--accent-gradient);
+  color: #ffffff;
+  box-shadow: var(--shadow-glow);
+  border-color: rgba(255,255,255,0.15);
+}
+
+.nav-button.active .nav-icon {
+  color: #ffffff;
+}
+
+.nav-badge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.nav-button.active .nav-badge {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
+
+.sidebar-footer {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 4px;
+  width: 100%;
+}
+
+.theme-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.theme-btn.active {
+  background: var(--bg-surface);
+  color: var(--text-main);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Main Content Area */
+.main-wrapper {
+  flex: 1;
+  min-width: 0;
+  padding: 36px 44px 80px;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.view-section {
+  display: none;
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.view-section.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile Toggle */
+.mobile-nav-toggle {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 24px;
+  cursor: pointer;
+  width: 100%;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================================================
+   HERO / SUMMARY BANNER
+   ========================================================================== */
+.hero-card {
+  background: linear-gradient(145deg, var(--bg-surface) 0%, var(--bg-card) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 36px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 44px;
+  align-items: center;
+}
+
+.hero-card::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -15%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+  pointer-events: none;
+}
+
+.hero-rings-dual {
+  display: flex;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.ring-container {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring-container svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.ring-bg {
+  fill: none;
+  stroke: var(--bg-subtle);
+  stroke-width: 9;
+}
+
+.ring-progress {
+  fill: none;
+  stroke-width: 9;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
+}
+
+.ring-center-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ring-value {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-main);
+}
+
+.ring-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-primary);
+  background: var(--accent-soft);
+  padding: 5px 14px;
+  border-radius: 99px;
+  width: fit-content;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.hero-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.25;
+}
+
+.hero-desc {
+  font-size: 14.5px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 740px;
+}
+
+/* ==========================================================================
+   KPI STRIP CARDS
+   ========================================================================== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 36px;
+}
+
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.kpi-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-md);
+}
+
+.kpi-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  font-size: 20px;
+  background: var(--bg-subtle);
+  color: var(--accent-primary);
+}
+
+.kpi-card.kpi-good .kpi-icon-wrap { background: var(--good-soft); color: var(--good); }
+.kpi-card.kpi-warn .kpi-icon-wrap { background: var(--warn-soft); color: var(--warn); }
+.kpi-card.kpi-bad .kpi-icon-wrap { background: var(--bad-soft); color: var(--bad); }
+
+.kpi-header {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+
+.kpi-number {
+  font-size: 34px;
+  font-weight: 800;
+  margin: 6px 0 4px;
+  line-height: 1;
+}
+
+.kpi-footnote {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   FILTER CHIPS & SECTION HEADERS
+   ========================================================================== */
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.section-title {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title .lucide {
+  color: var(--accent-primary);
+}
+
+.filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.chip-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 7px 16px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.chip-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+}
+
+.chip-btn.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(99, 102, 241, 0.35);
+}
+
+/* ==========================================================================
+   COMPETENCY CARDS LIST
+   ========================================================================== */
+.competencies-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.comp-item-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 26px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+
+.comp-item-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-glow);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+
+
+.comp-item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.comp-code-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-primary);
+  background: var(--accent-soft);
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-right: 10px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.comp-item-title {
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.comp-guide-tag {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  padding: 4px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  border: 1px solid var(--border);
+}
+
+.comp-dual-bars {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.bar-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bar-box:hover {
+  background: var(--bg-subtle);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.bar-box.zajuna-box:hover {
+  border-color: var(--good);
+  box-shadow: 0 0 16px var(--good-glow);
+}
+
+.bar-box.sofia-box:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 16px var(--shadow-glow);
+}
+
+.bar-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bar-box-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bar-box-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.bar-box-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--text-faint);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.bar-box:hover .bar-box-footer {
+  color: var(--text-main);
+}
+
+.modal-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+  overflow-x: auto;
+}
+
+.modal-tab-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.modal-tab-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+}
+
+.modal-tab-btn.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(99, 102, 241, 0.35);
+}
+
+.modal-tab-content {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.progress-track {
+  height: 9px;
+  background: var(--bg-subtle);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+/* ==========================================================================
+   LEARNERS ROSTER TABLE & SEARCH
+   ========================================================================== */
+.roster-controls {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 22px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search-input-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 380px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 11px 16px 11px 42px;
+  color: var(--text-main);
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.table-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.roster-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.roster-table th {
+  background: var(--bg-surface);
+  padding: 14px 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.roster-table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.roster-table td.col-nowrap {
+  white-space: nowrap;
+}
+
+.roster-table tbody tr {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.roster-table tbody tr:hover {
+  background: var(--bg-card-hover);
+}
+
+.learner-profile-cell {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avatar-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: #fff;
+  font-weight: 700;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.learner-name-text {
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 14.5px;
+  white-space: nowrap;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-badge.complete { background: var(--good-soft); color: var(--good); }
+.status-badge.attention { background: var(--warn-soft); color: var(--warn); }
+.status-badge.blocked { background: var(--bad-soft); color: var(--bad); }
+
+/* ==========================================================================
+   MODAL WINDOW & DETAILED DIALOGS
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  max-width: 760px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 26px 30px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--bg-card);
+}
+
+.modal-title-area h3 {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.modal-title-area p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.modal-close-btn {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.modal-close-btn:hover {
+  background: var(--bad-soft);
+  color: var(--bad);
+  border-color: var(--bad);
+  transform: rotate(90deg);
+}
+
+.modal-body-content {
+  padding: 26px 30px 36px;
+}
+
+.stat-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.modal-stat-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+}
+
+.modal-stat-box .lbl {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  letter-spacing: 0.05em;
+}
+
+.modal-stat-box .val {
+  font-size: 28px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.modal-sub-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  margin: 26px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rap-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
+  font-size: 13.5px;
+}
+
+.rap-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--accent-primary);
+  flex-shrink: 0;
+  background: var(--accent-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.rap-name-text {
+  flex: 1;
+  color: var(--text-muted);
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+/* Excel Importer UI Styles */
+.btn-header-excel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  padding: 5px 12px;
+  border-radius: 99px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-header-excel:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-sidebar-excel {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--accent-soft);
+  color: var(--accent-primary);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  padding: 9px 14px;
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+}
+
+.btn-sidebar-excel:hover {
+  background: var(--accent-primary);
+  color: #fff;
+}
+
+.upload-dropzone-box {
+  background: var(--bg-card);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.2s ease;
+}
+
+.upload-dropzone-box:hover, .upload-dropzone-box.dragover {
+  border-color: var(--border-glow);
+  background: var(--bg-card-hover);
+}
+
+.dropzone-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--good-soft);
+  color: var(--good);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.dropzone-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.dropzone-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.btn-dropzone-select {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-dropzone-select:hover {
+  background: var(--accent-primary);
+  color: #fff;
+  border-color: var(--accent-primary);
+}
+
+/* ==========================================================================
+   FOOTER & RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+.footer-note {
+  margin-top: 52px;
+  padding-top: 26px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--text-faint);
+  line-height: 1.8;
+}
+
+@media (max-width: 992px) {
+  .hero-card { grid-template-columns: 1fr; gap: 28px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .comp-dual-bars { grid-template-columns: 1fr; gap: 14px; }
+}
+
+@media (max-width: 768px) {
+  .app-container { flex-direction: column; }
+  .sidebar {
+    position: fixed;
+    left: -100%;
+    top: 0;
+    height: 100vh;
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.open { transform: translateX(100%); }
+  .mobile-nav-toggle { display: flex; }
+  .main-wrapper { padding: 24px 18px 60px; }
+  .kpi-grid { grid-template-columns: 1fr; }
+  .stat-cards-grid { grid-template-columns: 1fr; }
+  .inst-brand { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<!-- Institutional Header -->
+<header class="inst-header">
+  <div class="inst-brand">
+    <div class="sena-logo-badge">
+      <i data-lucide="shield-check"></i> SENA
+    </div>
+    <span class="inst-title">Centro Agroempresarial y Desarrollo Pecuario del Huila</span>
+    <span class="divider-dot">•</span>
+    <span class="inst-sub">ADSO Ficha 3389010</span>
+  </div>
+  <div class="inst-meta">
+    <button class="btn-header-excel" id="openUpdateModalBtn" style="background:linear-gradient(135deg, rgba(16,185,129,0.25), rgba(99,102,241,0.25)); border-color:rgba(16,185,129,0.4);">
+      <i data-lucide="refresh-cw"></i> Actualizar Datos
+    </button>
+    <div class="live-indicator">
+      <span class="pulse-dot"></span>
+      <span>Corte Actualizado (Oct 2026)</span>
+    </div>
+  </div>
+</header>
+
+<div class="app-container">
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand-icon">
+        <i data-lucide="layers"></i>
+      </div>
+      <div>
+        <div class="sidebar-title">Seguimiento ADSO</div>
+        <div class="sidebar-subtitle">Fase Análisis & Planeación</div>
+      </div>
+    </div>
+
+    <nav class="nav-group">
+      <button class="nav-button active" data-view="resumen">
+        <i data-lucide="layout-dashboard" class="nav-icon"></i>
+        <span>Resumen General</span>
+      </button>
+      <button class="nav-button" data-view="competencias">
+        <i data-lucide="book-open-check" class="nav-icon"></i>
+        <span>Competencias</span>
+        <span class="nav-badge">10</span>
+      </button>
+      <button class="nav-button" data-view="fases">
+        <i data-lucide="git-branch" class="nav-icon"></i>
+        <span>Resultados por Fase</span>
+        <span class="nav-badge">2 Fases</span>
+      </button>
+      <button class="nav-button" data-view="aprendices">
+        <i data-lucide="users" class="nav-icon"></i>
+        <span>Aprendices Activos</span>
+        <span class="nav-badge">14</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer" style="flex-direction: column;">
+      <button class="btn-sidebar-excel" id="sidebarUpdateBtn" style="background:linear-gradient(135deg, #059669, #10b981); color:#fff; border-color:transparent; margin-bottom:12px;">
+        <i data-lucide="refresh-cw"></i> Actualizar Datos
+      </button>
+
+      <div class="theme-toggle" id="themeToggleBtn">
+        <button class="theme-btn active" data-t="dark">
+          <i data-lucide="moon"></i> Dark
+        </button>
+        <button class="theme-btn" data-t="light">
+          <i data-lucide="sun"></i> Light
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-wrapper">
+
+    <button class="mobile-nav-toggle" id="mobileMenuBtn">
+      <i data-lucide="menu"></i> <span>Menú de Navegación</span>
+    </button>
+
+    <!-- ================= RESUMEN VIEW ================= -->
+    <section class="view-section active" id="view-resumen">
+      
+      <div class="hero-card">
+        <div class="hero-rings-dual">
+          <div class="ring-container">
+            <svg viewBox="0 0 116 116">
+              <circle class="ring-bg" cx="58" cy="58" r="46"></circle>
+              <circle class="ring-progress" id="ringZajuna" cx="58" cy="58" r="46" stroke="#10b981" stroke-dasharray="289" stroke-dashoffset="0"></circle>
+            </svg>
+            <div class="ring-center-content">
+              <div class="ring-value num" id="ringZajunaPct">—</div>
+              <div class="ring-label">Zajuna</div>
+            </div>
+          </div>
+          
+          <div class="ring-container">
+            <svg viewBox="0 0 116 116">
+              <circle class="ring-bg" cx="58" cy="58" r="46"></circle>
+              <circle class="ring-progress" id="ringSofia" cx="58" cy="58" r="46" stroke="#6366f1" stroke-dasharray="289" stroke-dashoffset="0"></circle>
+            </svg>
+            <div class="ring-center-content">
+              <div class="ring-value num" id="ringSofiaPct">—</div>
+              <div class="ring-label">SOFIA Plus</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-info">
+          <span class="hero-tag">
+            <i data-lucide="sparkles"></i> Ficha 3389010 · Análisis & Planeación
+          </span>
+          <h1 class="hero-title">Estado de Avance en las 10 Competencias</h1>
+          <p class="hero-desc">
+            Reúne las evidencias calificadas en <b>LMS Zajuna</b> y los juicios evaluativos registrados en <b>SOFIA Plus</b> para las Guías 1 a 5 (Técnicas y Transversales). Selecciona cualquier competencia o aprendiz para consultar la hoja de ruta individual.
+          </p>
+        </div>
+      </div>
+
+      <!-- KPI Strip -->
+      <div class="kpi-grid" id="kpiRow"></div>
+
+      <!-- Competencies Overview -->
+      <div class="section-header-row">
+        <h2 class="section-title"><i data-lucide="bar-chart-3"></i> Comparativa por Competencia</h2>
+        <div class="filter-pills" id="guideFilterResumen">
+          <button class="chip-btn active" data-filter="all">Todas</button>
+          <button class="chip-btn" data-filter="Guia 1">Guía 1</button>
+          <button class="chip-btn" data-filter="Guia 2">Guía 2</button>
+          <button class="chip-btn" data-filter="Guia 3">Guía 3</button>
+          <button class="chip-btn" data-filter="Guia 4">Guía 4</button>
+          <button class="chip-btn" data-filter="Guia 5">Guía 5</button>
+        </div>
+      </div>
+
+      <div class="competencies-container" id="compListResumen"></div>
+
+    </section>
+
+    <!-- ================= COMPETENCIAS VIEW ================= -->
+    <section class="view-section" id="view-competencias">
+      <div class="section-header-row" style="margin-bottom: 24px;">
+        <div>
+          <h2 class="section-title"><i data-lucide="layers"></i> Catálogo Completo de Competencias</h2>
+          <p style="font-size: 13.5px; color: var(--text-muted); margin-top: 4px;">
+            10 competencias transversales y técnicas (Guías 1 a 5). Clic para ver RAPs asociados.
+          </p>
+        </div>
+        <div class="filter-pills" id="guideFilterFull">
+          <button class="chip-btn active" data-filter="all">Todas</button>
+          <button class="chip-btn" data-filter="Guia 1">Guía 1</button>
+          <button class="chip-btn" data-filter="Guia 2">Guía 2</button>
+          <button class="chip-btn" data-filter="Guia 3">Guía 3</button>
+          <button class="chip-btn" data-filter="Guia 4">Guía 4</button>
+          <button class="chip-btn" data-filter="Guia 5">Guía 5</button>
+        </div>
+      </div>
+
+      <div class="competencies-container" id="compListFull"></div>
+    </section>
+
+    <!-- ================= APRENDICES VIEW ================= -->
+    <section class="view-section" id="view-aprendices">
+      <div class="roster-controls">
+        <div>
+          <h2 class="section-title"><i data-lucide="user-check"></i> Aprendices Activos (14)</h2>
+          <p style="font-size: 13.5px; color: var(--text-muted); margin-top: 4px;">
+            Haz clic en cualquier fila para abrir el expediente individual con sus 10 competencias.
+          </p>
+        </div>
+
+        <div class="search-input-wrap">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Buscar aprendiz por nombre...">
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="roster-table" id="rosterTable">
+            <thead>
+              <tr>
+                <th style="width: 50px;">#</th>
+                <th>Aprendiz</th>
+                <th style="width: 140px; text-align: center;">Zajuna</th>
+                <th style="width: 140px; text-align: center;">SOFIA</th>
+                <th style="width: 180px;">Estado</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FASES VIEW ================= -->
+    <section class="view-section" id="view-fases">
+      <div class="section-header-row" style="margin-bottom: 24px;">
+        <div>
+          <h2 class="section-title"><i data-lucide="git-branch"></i> Competencias y Resultados por Fase del Programa</h2>
+          <p style="font-size: 13.5px; color: var(--text-muted); margin-top: 4px;">
+            Estructura curricular de la Ficha 3389010 dividida por Fase de Análisis (Guías 1 y 2) y Fase de Planeación (Guías 3, 4 y 5).
+          </p>
+        </div>
+        <div class="filter-pills" id="phaseFilter">
+          <button class="chip-btn active" data-phase="all">Todas las Fases</button>
+          <button class="chip-btn" data-phase="analisis">Fase 1: Análisis</button>
+          <button class="chip-btn" data-phase="planeacion">Fase 2: Planeación</button>
+        </div>
+      </div>
+
+      <div id="phasesContainer"></div>
+    </section>
+
+<footer class="footer-note">
+      <b>Fuentes institucionales:</b> P_228118_V_3389010_R_41_C_9525 Calificaciones (Zajuna) y Reporte SOFIA Plus (Ficha 3389010).<br>
+      Cubre las 10 competencias correspondientes a las Guías 1 a 5 (Fases de Análisis y Planeación). No incluye competencias de Fase Ejecución.
+    </footer>
+
+  </main>
+</div>
+
+<!-- ================= MODAL DIALOG ================= -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button class="modal-back-btn" id="modalBackBtn" style="display:none; background:var(--bg-surface); border:1px solid var(--border); color:var(--text-main); padding:6px 12px; border-radius:var(--radius-md); font-size:12.5px; font-weight:700; cursor:pointer; align-items:center; gap:6px; transition:all 0.2s;">
+          <i data-lucide="arrow-left"></i> Volver
+        </button>
+        <div class="modal-title-area">
+          <h3 id="modalName">—</h3>
+          <p id="modalDoc">—</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" id="modalClose"><i data-lucide="x"></i></button>
+    </div>
+    <div class="modal-body-content" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ================= PASSWORD PROTECTED MODAL ================= -->
+<div class="modal-overlay" id="passwordModalOverlay">
+  <div class="modal-content" style="max-width: 440px;">
+    <div class="modal-header">
+      <div class="modal-title-area">
+        <h3><i data-lucide="lock" style="color:var(--accent-primary);"></i> Acceso Restringido</h3>
+        <p>Ingresa la contraseña de administrador para actualizar datos.</p>
+      </div>
+      <button class="modal-close-btn" id="passwordModalClose"><i data-lucide="x"></i></button>
+    </div>
+
+    <form id="passwordAuthForm" style="padding: 24px;">
+      <div style="margin-bottom: 16px;">
+        <label style="display:block; font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px;">CONTRASEÑA DE ADMINISTRADOR</label>
+        <div style="position:relative;">
+          <input type="password" id="adminPasswordInput" class="search-input" placeholder="••••••••••••" style="width:100%; padding-right:40px; font-size:14px;" required>
+          <button type="button" id="togglePasswordVisibilityBtn" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer;">
+            <i data-lucide="eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="passwordErrorNotice" style="display:none; color:var(--bad); background:var(--bad-soft); padding:10px 14px; border-radius:var(--radius-md); font-size:12.5px; font-weight:600; margin-bottom:16px;">
+        <i data-lucide="alert-circle"></i> Contraseña incorrecta. Acceso denegado.
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" class="chip-btn" id="passwordCancelBtn">Cancelar</button>
+        <button type="submit" class="chip-btn active" style="padding:8px 20px;">
+          <i data-lucide="key-round"></i> Ingresar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= EXCEL IMPORTER MODAL ================= -->
+<div class="modal-overlay" id="excelModalOverlay">
+  <div class="modal-content" style="max-width: 680px;">
+    <div class="modal-header">
+      <div class="modal-title-area">
+        <h3><i data-lucide="refresh-cw"></i> Actualización de Datos ADSO</h3>
+        <p>Sincroniza en vivo desde Google Drive o procesa reportes Excel de Zajuna y SOFIA Plus.</p>
+      </div>
+      <button class="modal-close-btn" id="excelModalClose"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="modal-body-content" style="padding: 24px;">
+      
+      <!-- Cloud Drive Sync Box -->
+      <div style="margin-bottom:18px; padding:16px; background:var(--accent-soft); border:1px solid rgba(99,102,241,0.25); border-radius:var(--radius-lg); display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:700; font-size:14px; color:var(--text-main); display:flex; align-items:center; gap:8px;">
+            <i data-lucide="cloud" style="color:var(--good);"></i> Sincronización en la Nube con Google Drive
+          </div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+            Obtiene los datos en vivo de tu hoja de cálculo Google Sheets en Google Drive.
+          </div>
+        </div>
+        <button class="chip-btn active" id="syncDriveModalBtn" style="background:var(--good); border-color:var(--good); font-size:12.5px; padding:8px 16px;">
+          <i data-lucide="cloud-lightning"></i> Sincronizar Ahora
+        </button>
+      </div>
+
+      <div style="text-align:center; font-size:12px; font-weight:700; color:var(--text-faint); margin:16px 0;">— O SUBE ARCHIVOS DESDE TU EQUIPO —</div>
+      
+      <!-- Box 1: Zajuna File -->
+      <div class="upload-dropzone-box" id="zajunaDropzone">
+        <div class="dropzone-icon"><i data-lucide="file-check-2"></i></div>
+        <div style="flex:1;">
+          <div class="dropzone-title">1. Reporte de Calificaciones ZAJUNA (.xlsx / .xls)</div>
+          <div class="dropzone-sub" id="zajunaStatus">Arrastra el archivo de Zajuna o haz clic en Seleccionar</div>
+        </div>
+        <input type="file" id="zajunaFileInput" accept=".xlsx,.xls" style="display:none;">
+        <button class="btn-dropzone-select" onclick="document.getElementById('zajunaFileInput').click()">Seleccionar</button>
+      </div>
+
+      <!-- Box 2: SOFIA Plus File -->
+      <div class="upload-dropzone-box" id="sofiaDropzone" style="margin-top: 14px;">
+        <div class="dropzone-icon" style="color:var(--accent-primary); background:var(--accent-soft);"><i data-lucide="graduation-cap"></i></div>
+        <div style="flex:1;">
+          <div class="dropzone-title">2. Reporte de Juicios SOFIA PLUS (.xlsx / .xls)</div>
+          <div class="dropzone-sub" id="sofiaStatus">Arrastra el archivo de SOFIA o haz clic en Seleccionar</div>
+        </div>
+        <input type="file" id="sofiaFileInput" accept=".xlsx,.xls" style="display:none;">
+        <button class="btn-dropzone-select" onclick="document.getElementById('sofiaFileInput').click()">Seleccionar</button>
+      </div>
+
+      <!-- Notice & Action bar -->
+      <div id="excelProcessNotice" style="margin-top: 18px; display:none; padding:12px 16px; border-radius:12px; font-size:13px; font-weight:600;"></div>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-top:24px; padding-top:16px; border-top:1px solid var(--border); flex-wrap:wrap; gap:12px;">
+        <button class="chip-btn" id="resetDefaultDataBtn" style="color:var(--bad); border-color:rgba(239,68,68,0.3);">
+          <i data-lucide="rotate-ccw"></i> Restablecer Datos Iniciales
+        </button>
+
+        <button class="chip-btn active" id="processExcelFilesBtn" style="padding:10px 20px; font-size:13.5px;" disabled>
+          <i data-lucide="refresh-cw"></i> Procesar y Actualizar Dashboard
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   DATA ENGINE & CONFIGURATION
+   ========================================================================== */
+const COMP_META = {
+  "220501092": {name:"Establecer requisitos del software", guide:"Guía 1", raps:["01", "02", "03", "04"]},
+  "220501093": {name:"Evaluar requisitos y desarrollar algoritmos", guide:"Guías 1 y 3", raps:["01", "02", "03", "04"]},
+  "220501046": {name:"Utilizar herramientas informáticas (TIC)", guide:"Guía 1", raps:["01", "02", "03", "04"]},
+  "240202501": {name:"Inglés - interactuar en lengua extranjera", guide:"Guías 1-5", raps:["01", "02", "03", "04", "05"]},
+  "220501094": {name:"Estructurar propuesta técnica", guide:"Guía 2", raps:["01", "02", "03"]},
+  "240201528": {name:"Razonar cuantitativamente (matemáticas)", guide:"Guía 2", raps:["01", "02", "03", "04"]},
+  "220201501": {name:"Aplicación de ciencias naturales (física)", guide:"Guía 3", raps:["01", "02", "03", "04"]},
+  "220501095": {name:"Diseñar la solución de software", guide:"Guías 4-5", raps:["01", "02", "03", "04"]},
+  "240201524": {name:"Desarrollar procesos de comunicación", guide:"Guía 4", raps:["01", "03", "04"]},
+  "240201064": {name:"Orientar investigación formativa", guide:"Guía 5", raps:["01", "02", "03", "04"]},
+};
+
+const RAP_LABELS = {
+  "220501092-01": "Caracterizar los procesos de la organización de acuerdo con el software a construir.",
+  "220501092-02": "Recolectar información del software a construir de acuerdo con las necesidades del cliente.",
+  "220501092-03": "Establecer los requisitos del software de acuerdo con la información recolectada.",
+  "220501092-04": "Validar el informe de requisitos de acuerdo con las necesidades del cliente.",
+  "220501093-01": "Planear actividades de análisis de acuerdo con la metodología seleccionada.",
+  "220501093-02": "Modelar las funciones del software de acuerdo con el informe de requisitos.",
+  "220501093-03": "Desarrollar procesos lógicos a través de la implementación de algoritmos.",
+  "220501093-04": "Verificar los modelos realizados en la fase de análisis de acuerdo con lo establecido en el informe de requisitos.",
+  "220501046-01": "Alistar herramientas de TIC de acuerdo con necesidades.",
+  "220501046-02": "Aplicar funcionalidades de herramientas TIC.",
+  "220501046-03": "Evaluar los resultados de acuerdo con los requerimientos.",
+  "220501046-04": "Optimizar los resultados de acuerdo con la verificación.",
+  "240202501-01": "Comprender información sobre situaciones cotidianas y laborales.",
+  "240202501-02": "Intercambiar opiniones sobre situaciones cotidianas y laborales.",
+  "240202501-03": "Discutir soluciones a problemas en contextos sociales/laborales.",
+  "240202501-04": "Implementar acciones de mejora en lengua extranjera.",
+  "240202501-05": "Presentar un proceso para la realización de una actividad.",
+  "220501094-01": "Definir especificaciones técnicas del software.",
+  "220501094-02": "Elaborar propuesta técnica del software.",
+  "220501094-03": "Validar condiciones de la propuesta técnica.",
+  "240201528-01": "Identificar modelos matemáticos de acuerdo con requerimientos.",
+  "240201528-02": "Plantear problemas matemáticos a partir de situaciones.",
+  "240201528-03": "Resolver problemas matemáticos en contexto productivo.",
+  "240201528-04": "Proponer acciones de mejora en procedimientos matemáticos.",
+  "220201501-01": "Identificar principios y leyes de la física.",
+  "220201501-02": "Solucionar problemas del sector productivo con física.",
+  "220201501-03": "Verificar transformaciones físicas de la materia.",
+  "220201501-04": "Proponer acciones de mejora en procesos según la física.",
+  "220501095-01": "Elaborar artefactos de diseño del software.",
+  "220501095-02": "Estructurar el modelo de datos del software.",
+  "220501095-03": "Determinar características técnicas de la interfaz gráfica.",
+  "220501095-04": "Verificar entregables de la fase de diseño.",
+  "240201524-01": "Analizar componentes de la comunicación.",
+  "240201524-03": "Relacionar procesos comunicativos con lógica.",
+  "240201524-04": "Establecer procesos de enriquecimiento lexical.",
+  "240201064-01": "Analizar contexto productivo según necesidades.",
+  "240201064-02": "Estructurar el proyecto de investigación.",
+  "240201064-03": "Argumentar aspectos teóricos del proyecto.",
+  "240201064-04": "Proponer soluciones a necesidades según investigación."
+};
+
+const INITIAL_14_NAMES = [
+  "Anderson Jair Arango Arias",
+  "Andrea Carolina Blanco Escobar",
+  "Cristian Andres Estrada Gelvis",
+  "Darly Falco Medrano",
+  "Gary William Garcia Torres",
+  "Jhonatan Andres Fuentes Agamez",
+  "Josue Gabriel Murcia Olarte",
+  "Juan Fernando Gil Colorado",
+  "Juan Fernando Gomez Rojas",
+  "Juan Jose Ruiz Bustamante",
+  "Luis Giovanni Burbano Lopez",
+  "Nikol Dayann Contreras Guerrero",
+  "Rachael Valentina Gomez Rivera",
+  "Valentina Mena Passo"
+];
+
+function build100PctLearnerRecord() {
+  return {
+    "220501092": { zaj: [12, 12], sofia: { "01": "APROBADO", "02": "APROBADO", "03": "APROBADO", "04": "APROBADO" } },
+    "220501093": { zaj: [17, 17], sofia: { "01": "APROBADO", "02": "APROBADO", "03": "APROBADO", "04": "APROBADO" } },
+    "220501046": { zaj: [4, 4],   sofia: { "01": "APROBADO", "02": "APROBADO", "03": "APROBADO", "04": "APROBADO" } },
+    "240202501": { zaj: [18, 18], sofia: { "01": "APROBADO", "02": "APROBADO", "03": "APROBADO", "04": "APROBADO", "05": "APROBADO", "06": "APROBADO" } },
+    "220501094": { zaj: [8, 8],   sofia: { "01": "APROBADO", "02": "APROBADO", "03": "APROBADO" } },
+    "240201528": { zaj: [3, 3],   sofia: { "01": "APROBADO", "02": "APROBADO", "03": "APROBADO", "04": "APROBADO" } },
+    "220201501": { zaj: [4, 4],   sofia: { "01": "APROBADO", "02": "APROBADO", "03": "APROBADO", "04": "APROBADO" } },
+    "220501095": { zaj: [23, 23], sofia: { "01": "APROBADO", "02": "APROBADO", "03": "APROBADO", "04": "APROBADO" } },
+    "240201524": { zaj: [4, 4],   sofia: { "01": "APROBADO", "03": "APROBADO", "04": "APROBADO" } },
+    "240201064": { zaj: [2, 2],   sofia: { "01": "APROBADO", "02": "APROBADO", "03": "APROBADO", "04": "APROBADO" } }
+  };
+}
+
+const LEARNERS = {};
+INITIAL_14_NAMES.forEach(name => {
+  LEARNERS[name] = build100PctLearnerRecord();
+});
+
+const COMP_ORDER = ["220501092","220501093","220501046","240202501","220501094","240201528","220201501","220501095","240201524","240201064"];
+const LEARNER_NAMES = Object.keys(LEARNERS).sort((a,b)=>a.localeCompare(b,'es'));
+
+/* Helpers */
+function pct(a,b){ return b===0?100:Math.round(100*a/b); }
+function colorForPct(p){ return p===100?'var(--good)':(p>=75?'var(--warn)':'var(--bad)'); }
+
+function getInitials(name){
+  return name.split(' ').map(n=>n[0]).slice(0,2).join('');
+}
+
+function learnerZajTotal(name){
+  let got=0,max=0;
+  COMP_ORDER.forEach(c=>{ const z=LEARNERS[name][c].zaj; got+=z[0]; max+=z[1]; });
+  return [got,max];
+}
+
+function learnerSofiaTotal(name){
+  let ok=0,tot=0;
+  COMP_ORDER.forEach(c=>{ const s=LEARNERS[name][c].sofia; Object.values(s).forEach(v=>{ tot++; if(v==='APROBADO') ok++; }); });
+  return [ok,tot];
+}
+
+function compZajTotal(code){
+  let got=0,max=0;
+  LEARNER_NAMES.forEach(n=>{ const z=LEARNERS[n][code].zaj; got+=z[0]; max+=z[1]; });
+  return [got,max];
+}
+
+function compSofiaTotal(code){
+  let ok=0,tot=0;
+  LEARNER_NAMES.forEach(n=>{ Object.values(LEARNERS[n][code].sofia).forEach(v=>{ tot++; if(v==='APROBADO') ok++; }); });
+  return [ok,tot];
+}
+
+function refreshIcons(){
+  if(window.lucide && typeof window.lucide.createIcons === 'function'){
+    window.lucide.createIcons();
+  }
+}
+
+/* ==========================================================================
+   RENDER ENGINE
+   ========================================================================== */
+function renderDashboard(){
+  let zg=0,zm=0,sg=0,sm=0;
+  LEARNER_NAMES.forEach(n=>{
+    const [a,b]=learnerZajTotal(n); zg+=a; zm+=b;
+    const [c,d]=learnerSofiaTotal(n); sg+=c; sm+=d;
+  });
+  
+  const zp = pct(zg,zm);
+  const sp = pct(sg,sm);
+  const strokeMax = 289;
+
+  document.getElementById('ringZajunaPct').textContent = zp + '%';
+  document.getElementById('ringZajuna').style.strokeDashoffset = strokeMax * (1 - zp/100);
+
+  document.getElementById('ringSofiaPct').textContent = sp + '%';
+  document.getElementById('ringSofia').style.strokeDashoffset = strokeMax * (1 - sp/100);
+
+  const compsAt100Zaj = COMP_ORDER.filter(c=>{ const [a,b]=compZajTotal(c); return a===b; }).length;
+  let worst = null, worstPct = 101;
+  COMP_ORDER.forEach(c=>{ const [a,b]=compSofiaTotal(c); const p=pct(a,b); if(p<worstPct){worstPct=p; worst=c;} });
+
+  const kpiHtml = `
+    <div class="kpi-card kpi-good">
+      <div class="kpi-icon-wrap"><i data-lucide="file-check-2"></i></div>
+      <div class="kpi-header">Evidencias Zajuna</div>
+      <div class="kpi-number num" style="color:var(--good);">${zp}%</div>
+      <div class="kpi-footnote"><b>${zg}/${zm}</b> entregables Aprobados</div>
+    </div>
+
+    <div class="kpi-card kpi-warn">
+      <div class="kpi-icon-wrap"><i data-lucide="graduation-cap"></i></div>
+      <div class="kpi-header">Juicios SOFIA Plus</div>
+      <div class="kpi-number num" style="color:var(--accent-primary);">${sp}%</div>
+      <div class="kpi-footnote"><b>${sg}/${sm}</b> RAPs evaluados en sistema</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap"><i data-lucide="award"></i></div>
+      <div class="kpi-header">Competencias 100%</div>
+      <div class="kpi-number num">${compsAt100Zaj}/10</div>
+      <div class="kpi-footnote">Completadas por los 14 aprendices</div>
+    </div>
+
+    <div class="kpi-card kpi-bad">
+      <div class="kpi-icon-wrap"><i data-lucide="alert-triangle"></i></div>
+      <div class="kpi-header">Mayor Atraso SOFIA</div>
+      <div class="kpi-number num" style="color:var(--bad);">${worstPct}%</div>
+      <div class="kpi-footnote">${COMP_META[worst].name}</div>
+    </div>
+  `;
+  document.getElementById('kpiRow').innerHTML = kpiHtml;
+
+  renderCompetencyList('compListResumen', 'all');
+  renderCompetencyList('compListFull', 'all');
+  renderRoster('');
+  renderPhasesView('all');
+  refreshIcons();
+}
+
+function guideMatchesFilter(compGuide, filterStr) {
+  if (!filterStr || filterStr === 'all') return true;
+
+  const match = filterStr.match(/\d+/);
+  if (!match) return true;
+  const targetNum = parseInt(match[0], 10);
+
+  if (compGuide.includes('-')) {
+    const rangeMatch = compGuide.match(/(\d+)\s*-\s*(\d+)/);
+    if (rangeMatch) {
+      const min = parseInt(rangeMatch[1], 10);
+      const max = parseInt(rangeMatch[2], 10);
+      return targetNum >= min && targetNum <= max;
+    }
+  }
+
+  if (compGuide.includes(' y ')) {
+    const nums = compGuide.match(/\d+/g);
+    if (nums) {
+      return nums.map(n => parseInt(n, 10)).includes(targetNum);
+    }
+  }
+
+  const singleNum = compGuide.match(/\d+/);
+  if (singleNum) {
+    return parseInt(singleNum[0], 10) === targetNum;
+  }
+
+  return true;
+}
+
+function renderCompetencyList(containerId, filterGuide){
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  
+  const filtered = COMP_ORDER.filter(code => {
+    return guideMatchesFilter(COMP_META[code].guide, filterGuide);
+  });
+
+  if(filtered.length === 0){
+    container.innerHTML = `<div style="padding:32px; text-align:center; color:var(--text-faint);">No se encontraron competencias para este filtro.</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(code => {
+    const meta = COMP_META[code];
+    const [zg,zm] = compZajTotal(code);
+    const [sg,sm] = compSofiaTotal(code);
+    const zp = pct(zg,zm);
+    const sp = pct(sg,sm);
+
+    return `
+      <div class="comp-item-card" data-comp="${code}">
+        <div class="comp-item-top">
+          <div>
+            <span class="comp-code-badge">${code}</span>
+            <span class="comp-item-title">${meta.name}</span>
+          </div>
+          <span class="comp-guide-tag">${meta.guide}</span>
+        </div>
+
+        <div class="comp-dual-bars">
+          <div class="bar-box zajuna-box" data-action="zajuna" data-comp="${code}">
+            <div class="bar-box-header">
+              <span class="bar-box-title"><i data-lucide="file-check-2"></i> Evidencias Zajuna</span>
+              <span class="bar-box-value" style="color:${colorForPct(zp)}">${zp}%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width:${zp}%; background:${colorForPct(zp)};"></div>
+            </div>
+            <div class="bar-box-footer">
+              <span>${zg}/${zm} Entregables</span>
+              <span>Pendientes <i data-lucide="chevron-right"></i></span>
+            </div>
+          </div>
+
+          <div class="bar-box sofia-box" data-action="sofia" data-comp="${code}">
+            <div class="bar-box-header">
+              <span class="bar-box-title"><i data-lucide="graduation-cap"></i> Juicios SOFIA Plus</span>
+              <span class="bar-box-value" style="color:${colorForPct(sp)}">${sp}%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width:${sp}%; background:${colorForPct(sp)};"></div>
+            </div>
+            <div class="bar-box-footer">
+              <span>${sg}/${sm} Juicios RAPs</span>
+              <span>Pendientes <i data-lucide="chevron-right"></i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  refreshIcons();
+}
+
+
+const PHASES_CONFIG = {
+  analisis: {
+    title: "Fase 1: Análisis",
+    subtitle: "Fundamentación de requisitos, modelado de procesos, propuesta técnica, TIC, matemáticas e inglés básico (Guías 1 y 2).",
+    badge: "Guías 1 y 2",
+    icon: "search-code",
+    color: "#6366f1",
+    competencies: [
+      { code: "220501092", guide: "Guía 1", raps: ["01", "02", "03", "04"] },
+      { code: "220501093", guide: "Guía 1", raps: ["01", "02", "04"] },
+      { code: "220501046", guide: "Guía 1", raps: ["01", "02", "03", "04"] },
+      { code: "220501094", guide: "Guía 2", raps: ["01", "02", "03"] },
+      { code: "240201528", guide: "Guía 2", raps: ["01", "02", "03", "04"] },
+      { code: "240202501", guide: "Guías 1-2", raps: ["01", "02"] }
+    ]
+  },
+  planeacion: {
+    title: "Fase 2: Planeación",
+    subtitle: "Diseño de la solución de software, física aplicada, algoritmos avanzados, comunicación, investigación e inglés técnico (Guías 3, 4 y 5).",
+    badge: "Guías 3, 4 y 5",
+    icon: "layout-grid",
+    color: "#10b981",
+    competencies: [
+      { code: "220201501", guide: "Guía 3", raps: ["01", "02", "03", "04"] },
+      { code: "220501093", guide: "Guía 3", raps: ["03"] },
+      { code: "220501095", guide: "Guías 4-5", raps: ["01", "02", "03", "04"] },
+      { code: "240201524", guide: "Guía 4", raps: ["01", "03", "04"] },
+      { code: "240201064", guide: "Guía 5", raps: ["01", "02", "03", "04"] },
+      { code: "240202501", guide: "Guías 3-5", raps: ["03", "04", "05"] }
+    ]
+  }
+};
+
+function renderPhasesView(phaseFilter = 'all') {
+  const container = document.getElementById('phasesContainer');
+  if(!container) return;
+
+  const phasesToRender = Object.entries(PHASES_CONFIG).filter(([key]) => {
+    if(phaseFilter === 'all') return true;
+    return key === phaseFilter;
+  });
+
+  let html = '';
+
+  phasesToRender.forEach(([phaseKey, phase]) => {
+    let pZajGot = 0, pZajMax = 0, pSofiaApproved = 0, pSofiaTotal = 0;
+
+    phase.competencies.forEach(item => {
+      const code = item.code;
+      const targetRaps = item.raps;
+
+      LEARNER_NAMES.forEach(n => {
+        const z = LEARNERS[n][code].zaj;
+        pZajGot += z[0];
+        pZajMax += z[1];
+
+        targetRaps.forEach(rapSuffix => {
+          pSofiaTotal++;
+          if(LEARNERS[n][code].sofia[rapSuffix] === 'APROBADO') {
+            pSofiaApproved++;
+          }
+        });
+      });
+    });
+
+    const pZajPct = pct(pZajGot, pZajMax);
+    const pSofiaPct = pct(pSofiaApproved, pSofiaTotal);
+
+    html += `
+      <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-xl); padding:28px; margin-bottom:36px; box-shadow:var(--shadow-md);">
+        
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; padding-bottom:20px; border-bottom:1px solid var(--border); margin-bottom:24px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="hero-tag" style="background:var(--accent-soft); color:var(--accent-primary); border-color:rgba(99,102,241,0.3);">
+                <i data-lucide="layers"></i> ${phase.badge}
+              </span>
+              <h2 style="font-size:22px; font-weight:800; color:var(--text-main); margin:0;">${phase.title}</h2>
+            </div>
+            <p style="font-size:13.5px; color:var(--text-muted); margin-top:6px; max-width:760px;">${phase.subtitle}</p>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:20px;">
+            <div style="text-align:right;">
+              <div style="font-size:11px; font-weight:700; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.05em;">Evidencias Zajuna</div>
+              <div class="num" style="font-size:20px; font-weight:800; color:${colorForPct(pZajPct)};">${pZajPct}% <span style="font-size:12px; color:var(--text-muted);">(${pZajGot}/${pZajMax})</span></div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; font-weight:700; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.05em;">Juicios SOFIA Plus</div>
+              <div class="num" style="font-size:20px; font-weight:800; color:${colorForPct(pSofiaPct)};">${pSofiaPct}% <span style="font-size:12px; color:var(--text-muted);">(${pSofiaApproved}/${pSofiaTotal})</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr; gap:20px;">
+    `;
+
+    phase.competencies.forEach(compItem => {
+      const code = compItem.code;
+      const meta = COMP_META[code];
+      const targetRaps = compItem.raps;
+
+      const [zg, zm] = compZajTotal(code);
+      const zp = pct(zg, zm);
+
+      let compSofiaApp = 0, compSofiaTot = 0;
+      targetRaps.forEach(suffix => {
+        LEARNER_NAMES.forEach(n => {
+          compSofiaTot++;
+          if(LEARNERS[n][code].sofia[suffix] === 'APROBADO') compSofiaApp++;
+        });
+      });
+      const sp = pct(compSofiaApp, compSofiaTot);
+
+      html += `
+        <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; transition:all 0.2s;">
+          
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span class="comp-code-badge">${code}</span>
+              <div>
+                <div style="font-weight:700; font-size:15px; color:var(--text-main);">${meta.name}</div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Corresponde a ${compItem.guide} · ${targetRaps.length} RAP(s) en esta Fase</div>
+              </div>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:16px;">
+              <div style="font-size:12.5px; font-weight:700;" class="num">
+                Zajuna: <span style="color:${colorForPct(zp)};">${zp}%</span>
+              </div>
+              <div style="font-size:12.5px; font-weight:700;" class="num">
+                SOFIA RAPs Fase: <span style="color:${colorForPct(sp)};">${sp}%</span>
+              </div>
+              <button class="chip-btn" onclick="openCompetencyModal('${code}', 'all')" style="font-size:12px; padding:4px 10px;">
+                <i data-lucide="eye"></i> Detalle
+              </button>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr; gap:8px; margin-top:14px; padding-top:14px; border-top:1px dashed var(--border);">
+      `;
+
+      targetRaps.forEach(suffix => {
+        const rapKey = `${code}-${suffix}`;
+        const label = RAP_LABELS[rapKey] || rapKey;
+        let rapApproved = 0;
+        LEARNER_NAMES.forEach(n => {
+          if(LEARNERS[n][code].sofia[suffix] === 'APROBADO') rapApproved++;
+        });
+        const rapPct = pct(rapApproved, LEARNER_NAMES.length);
+        const isOk = rapPct === 100;
+        const statusBadge = isOk 
+          ? `<span class="status-badge complete" style="font-size:11px; padding:2px 8px;"><i data-lucide="check-circle-2"></i> 100% Al Día</span>`
+          : `<span class="status-badge attention" style="font-size:11px; padding:2px 8px;"><i data-lucide="clock"></i> En Progreso (${14 - rapApproved} pend.)</span>`;
+
+        html += `
+          <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg-card); padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border); font-size:13px; gap:12px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:240px;">
+              <span class="rap-code">RAP ${suffix}</span>
+              <span style="color:var(--text-main); font-weight:500;">${label}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span class="num" style="font-weight:700; color:${colorForPct(rapPct)};">${rapApproved}/14 Aprobados (${rapPct}%)</span>
+              ${statusBadge}
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+  refreshIcons();
+}
+
+function renderRoster(query){
+  const tbody = document.querySelector('#rosterTable tbody');
+  
+  const filtered = LEARNER_NAMES.filter(name => name.toLowerCase().includes(query.toLowerCase()));
+
+  tbody.innerHTML = filtered.map((name, idx) => {
+    const [zg,zm] = learnerZajTotal(name);
+    const [sg,sm] = learnerSofiaTotal(name);
+    const zp = pct(zg,zm);
+    const sp = pct(sg,sm);
+
+    let statusPill = '';
+    if(zp === 100 && sp === 100) {
+      statusPill = `<span class="status-badge complete"><i data-lucide="check-circle-2"></i> 100% Al Día</span>`;
+    } else if(sp < 50 || zp < 50) {
+      statusPill = `<span class="status-badge blocked"><i data-lucide="alert-circle"></i> Requiere Atención</span>`;
+    } else {
+      statusPill = `<span class="status-badge attention"><i data-lucide="clock"></i> En Progreso</span>`;
+    }
+
+    return `
+      <tr data-learner="${name}">
+        <td class="num col-nowrap" style="color:var(--text-faint); font-weight:700;">${idx+1}</td>
+        <td>
+          <div class="learner-profile-cell">
+            <div class="avatar-circle">${getInitials(name)}</div>
+            <span class="learner-name-text">${name}</span>
+          </div>
+        </td>
+        <td class="num col-nowrap" style="font-weight:700; text-align:center; color:${colorForPct(zp)};">${zp}%</td>
+        <td class="num col-nowrap" style="font-weight:700; text-align:center; color:${colorForPct(sp)};">${sp}%</td>
+        <td class="col-nowrap">${statusPill}</td>
+      </tr>
+    `;
+  }).join('');
+  
+  refreshIcons();
+}
+
+/* ==========================================================================
+   MODALS ENGINE
+   ========================================================================== */
+/* ==========================================================================
+   MODALS ENGINE & NAVIGATION HISTORY
+   ========================================================================== */
+let modalHistoryStack = [];
+let activeModalState = null;
+
+function updateModalNavigationUI() {
+  const backBtn = document.getElementById('modalBackBtn');
+  if (!backBtn) return;
+
+  if (modalHistoryStack.length > 0) {
+    backBtn.style.display = 'inline-flex';
+    const prev = modalHistoryStack[modalHistoryStack.length - 1];
+    let label = 'Volver';
+    if (prev.type === 'competency') {
+      label = `Volver a ${prev.code}`;
+    } else if (prev.type === 'learner') {
+      const firstName = prev.name.split(' ')[0];
+      label = `Volver a ${firstName}`;
+    }
+    backBtn.innerHTML = `<i data-lucide="arrow-left"></i> ${label}`;
+  } else {
+    backBtn.style.display = 'none';
+  }
+  refreshIcons();
+}
+
+function popModalState() {
+  if (modalHistoryStack.length === 0) return;
+  const prevState = modalHistoryStack.pop();
+  if (prevState.type === 'competency') {
+    openCompetencyModal(prevState.code, prevState.targetTab, true);
+  } else if (prevState.type === 'learner') {
+    openLearnerModal(prevState.name, true);
+  }
+}
+
+function closeMainModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  modalHistoryStack = [];
+  activeModalState = null;
+  updateModalNavigationUI();
+}
+
+function openCompetencyModal(code, targetTab = 'all', isBackNav = false){
+  const isOpen = document.getElementById('modalOverlay').classList.contains('open');
+
+  if (isBackNav) {
+    // Returning to previous modal state
+  } else if (isOpen && activeModalState) {
+    // Pushing current view to history before switching
+    modalHistoryStack.push(activeModalState);
+  } else {
+    // Opening fresh from page
+    modalHistoryStack = [];
+  }
+
+  activeModalState = { type: 'competency', code, targetTab };
+  updateModalNavigationUI();
+
+  const meta = COMP_META[code];
+  const [zg,zm] = compZajTotal(code);
+  const [sg,sm] = compSofiaTotal(code);
+  const zp = pct(zg,zm), sp = pct(sg,sm);
+
+  // Compute pending learners for Zajuna
+  const pendingZajuna = [];
+  LEARNER_NAMES.forEach(n => {
+    const z = LEARNERS[n][code].zaj;
+    if(z[0] < z[1]){
+      pendingZajuna.push({ name: n, got: z[0], max: z[1], pct: pct(z[0], z[1]) });
+    }
+  });
+
+  // Compute pending learners for SOFIA Plus
+  const pendingSofia = [];
+  LEARNER_NAMES.forEach(n => {
+    const sDict = LEARNERS[n][code].sofia;
+    const missingRaps = Object.entries(sDict).filter(([r, status]) => status !== 'APROBADO').map(([r]) => r);
+    const approvedCount = Object.values(sDict).filter(v => v === 'APROBADO').length;
+    const totalRaps = Object.values(sDict).length;
+    if(missingRaps.length > 0){
+      pendingSofia.push({ name: n, missingRaps, approvedCount, totalRaps });
+    }
+  });
+
+  document.getElementById('modalName').textContent = meta.name;
+  document.getElementById('modalDoc').textContent = `Código: ${code} · ${meta.guide}`;
+
+  let html = `
+    <div class="stat-cards-grid">
+      <div class="modal-stat-box" style="cursor:pointer;" onclick="switchModalTab('zajuna')">
+        <div class="lbl"><i data-lucide="file-check-2"></i> Zajuna (Evidencias)</div>
+        <div class="val num" style="color:${colorForPct(zp)}">${zp}% (${zg}/${zm})</div>
+        <div style="font-size:11.5px; color:var(--text-faint); margin-top:4px;">${pendingZajuna.length} aprendices pendientes</div>
+      </div>
+      <div class="modal-stat-box" style="cursor:pointer;" onclick="switchModalTab('sofia')">
+        <div class="lbl"><i data-lucide="graduation-cap"></i> SOFIA Plus (Juicios)</div>
+        <div class="val num" style="color:${colorForPct(sp)}">${sp}% (${sg}/${sm})</div>
+        <div style="font-size:11.5px; color:var(--text-faint); margin-top:4px;">${pendingSofia.length} aprendices pendientes</div>
+      </div>
+    </div>
+
+    <div class="modal-tabs">
+      <button class="modal-tab-btn ${targetTab==='all'?'active':''}" data-mtab="all">
+        <i data-lucide="list"></i> Todos los RAPs
+      </button>
+      <button class="modal-tab-btn ${targetTab==='zajuna'?'active':''}" data-mtab="zajuna">
+        <i data-lucide="file-check-2"></i> Pendientes Zajuna (${pendingZajuna.length})
+      </button>
+      <button class="modal-tab-btn ${targetTab==='sofia'?'active':''}" data-mtab="sofia">
+        <i data-lucide="graduation-cap"></i> Pendientes SOFIA (${pendingSofia.length})
+      </button>
+    </div>
+
+    <!-- TAB 1: TODOS LOS RAPS -->
+    <div class="modal-tab-content" id="mTab-all" style="display:${targetTab==='all'?'block':'none'};">
+      <div class="modal-sub-title"><i data-lucide="check-square"></i> Resultados de Aprendizaje (RAPs)</div>
+  `;
+
+  meta.raps.forEach(suffix => {
+    const rapKey = `${code}-${suffix}`;
+    const label = RAP_LABELS[rapKey] || rapKey;
+    let approvedCount = 0;
+    LEARNER_NAMES.forEach(n => {
+      if(LEARNERS[n][code].sofia[suffix] === 'APROBADO') approvedCount++;
+    });
+    const rapPct = pct(approvedCount, LEARNER_NAMES.length);
+
+    html += `
+      <div class="rap-detail-row">
+        <span class="rap-code">${suffix}</span>
+        <span class="rap-name-text">${label}</span>
+        <span class="num" style="font-weight:700; color:${colorForPct(rapPct)}">${approvedCount}/14 Aprobados</span>
+      </div>
+    `;
+  });
+
+  html += `</div>
+
+    <!-- TAB 2: PENDIENTES ZAJUNA -->
+    <div class="modal-tab-content" id="mTab-zajuna" style="display:${targetTab==='zajuna'?'block':'none'};">
+      <div class="modal-sub-title"><i data-lucide="alert-circle"></i> Aprendices con Evidencias Pendientes en Zajuna (${pendingZajuna.length})</div>
+  `;
+
+  if(pendingZajuna.length === 0){
+    html += `<div style="color:var(--good); font-size:13.5px; font-weight:600; padding:14px; background:var(--good-soft); border-radius:12px; display:flex; align-items:center; gap:8px; border:1px solid var(--good);"><i data-lucide="sparkles"></i> ¡Excelente! Los 14 aprendices han completado todas las evidencias en Zajuna.</div>`;
+  } else {
+    pendingZajuna.forEach(item => {
+      html += `
+        <div class="rap-detail-row" style="cursor:pointer;" onclick="openLearnerModal('${item.name}')">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="avatar-circle" style="width:30px; height:30px; font-size:11px;">${getInitials(item.name)}</div>
+            <span style="font-weight:700; color:var(--text-main);">${item.name}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="num" style="font-weight:700; color:${colorForPct(item.pct)}">${item.got} / ${item.max} Evidencias (${item.pct}%)</span>
+            <span class="status-badge attention"><i data-lucide="clock"></i> En Progreso</span>
+            <i data-lucide="chevron-right" style="font-size:14px; opacity:0.6;"></i>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  html += `</div>
+
+    <!-- TAB 3: PENDIENTES SOFIA PLUS -->
+    <div class="modal-tab-content" id="mTab-sofia" style="display:${targetTab==='sofia'?'block':'none'};">
+      <div class="modal-sub-title"><i data-lucide="alert-triangle"></i> Aprendices con Juicios Pendientes en SOFIA Plus (${pendingSofia.length})</div>
+  `;
+
+  if(pendingSofia.length === 0){
+    html += `<div style="color:var(--good); font-size:13.5px; font-weight:600; padding:14px; background:var(--good-soft); border-radius:12px; display:flex; align-items:center; gap:8px; border:1px solid var(--good);"><i data-lucide="sparkles"></i> ¡Excelente! Los 14 aprendices tienen todos los RAPs aprobados en SOFIA Plus.</div>`;
+  } else {
+    pendingSofia.forEach(item => {
+      const rapsBadges = item.missingRaps.map(r => `<span class="status-badge attention" style="font-size:11px; padding:2px 6px;"><i data-lucide="clock"></i> RAP ${r}: Por Evaluar</span>`).join(' ');
+      html += `
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px; margin-bottom:10px; cursor:pointer;" onclick="openLearnerModal('${item.name}')">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="avatar-circle" style="width:30px; height:30px; font-size:11px;">${getInitials(item.name)}</div>
+              <span style="font-weight:700; color:var(--text-main);">${item.name}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="num" style="font-weight:700; color:${colorForPct(pct(item.approvedCount, item.totalRaps))}">${item.approvedCount} / ${item.totalRaps} RAPs Aprobados</span>
+              <i data-lucide="chevron-right" style="font-size:14px; opacity:0.6;"></i>
+            </div>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+            ${rapsBadges}
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  html += `</div>`;
+
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+  refreshIcons();
+
+  document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const tabKey = btn.getAttribute('data-mtab');
+      switchModalTab(tabKey);
+    });
+  });
+}
+
+function switchModalTab(tabKey){
+  document.querySelectorAll('.modal-tab-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-mtab') === tabKey);
+  });
+  document.querySelectorAll('.modal-tab-content').forEach(c => {
+    c.style.display = c.id === `mTab-${tabKey}` ? 'block' : 'none';
+  });
+  refreshIcons();
+}
+
+function openLearnerModal(name, isBackNav = false){
+  const isOpen = document.getElementById('modalOverlay').classList.contains('open');
+
+  if (isBackNav) {
+    // Returning to previous modal state
+  } else if (isOpen && activeModalState) {
+    // Pushing current view to history before switching
+    modalHistoryStack.push(activeModalState);
+  } else {
+    // Opening fresh from page
+    modalHistoryStack = [];
+  }
+
+  activeModalState = { type: 'learner', name };
+  updateModalNavigationUI();
+
+  const [zg,zm] = learnerZajTotal(name);
+  const [sg,sm] = learnerSofiaTotal(name);
+  const zp = pct(zg,zm), sp = pct(sg,sm);
+
+  document.getElementById('modalName').textContent = name;
+  document.getElementById('modalDoc').textContent = `Aprendiz Activo · ADSO Ficha 3389010`;
+
+  let html = `
+    <div class="stat-cards-grid">
+      <div class="modal-stat-box">
+        <div class="lbl">Zajuna (10 Competencias)</div>
+        <div class="val num" style="color:${colorForPct(zp)}">${zp}% (${zg}/${zm})</div>
+      </div>
+      <div class="modal-stat-box">
+        <div class="lbl">SOFIA Plus (Juicios Aprobados)</div>
+        <div class="val num" style="color:${colorForPct(sp)}">${sp}% (${sg}/${sm})</div>
+      </div>
+    </div>
+
+    <div class="modal-sub-title"><i data-lucide="list-checks"></i> Desglose de Evidencias en Zajuna</div>
+  `;
+
+  COMP_ORDER.forEach(code => {
+    const meta = COMP_META[code];
+    const z = LEARNERS[name][code].zaj;
+    const p = pct(z[0], z[1]);
+
+    html += `
+      <div class="rap-detail-row" style="cursor:pointer;" onclick="openCompetencyModal('${code}', 'all')">
+        <span class="rap-code">${code}</span>
+        <span class="rap-name-text">${meta.name}</span>
+        <span class="num" style="font-weight:700; color:${colorForPct(p)}">${z[0]}/${z[1]} Evidencias</span>
+        <i data-lucide="chevron-right" style="font-size:14px; opacity:0.6; margin-left:8px;"></i>
+      </div>
+    `;
+  });
+
+  html += `<div class="modal-sub-title" style="margin-top: 28px;"><i data-lucide="graduation-cap"></i> Desglose SOFIA Plus (Juicios Evaluados por Competencia)</div>`;
+
+  COMP_ORDER.forEach(code => {
+    const meta = COMP_META[code];
+    const sDict = LEARNERS[name][code].sofia;
+    const sApproved = Object.values(sDict).filter(v => v === 'APROBADO').length;
+    const sTotal = Object.values(sDict).length;
+    const sPct = pct(sApproved, sTotal);
+
+    const rapsHtml = Object.entries(sDict).map(([rapId, status]) => {
+      const isOk = status === 'APROBADO';
+      const badgeClass = isOk ? 'complete' : 'attention';
+      const icon = isOk ? 'check-circle-2' : 'clock';
+      return `<span class="status-badge ${badgeClass}" style="font-size:11px; padding:3px 8px; border:1px solid var(--border);" title="RAP ${code}-${rapId}">
+        <i data-lucide="${icon}"></i> RAP ${rapId}: ${status}
+      </span>`;
+    }).join(' ');
+
+    html += `
+      <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px 16px; margin-bottom:10px; cursor:pointer;" onclick="openCompetencyModal('${code}', 'sofia')">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+          <div>
+            <span class="rap-code">${code}</span>
+            <span style="font-weight:700; color:var(--text-main); font-size:14px; margin-left:6px;">${meta.name}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="num" style="font-weight:700; font-size:13px; color:${colorForPct(sPct)}">${sApproved}/${sTotal} Juicios (${sPct}%)</span>
+            <i data-lucide="chevron-right" style="font-size:14px; opacity:0.6;"></i>
+          </div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+          ${rapsHtml}
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+  refreshIcons();
+}
+
+/* ==========================================================================
+   EVENT LISTENERS & BINDINGS
+   ========================================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+
+  renderDashboard();
+
+  // Navigation Switcher
+  document.querySelectorAll('.nav-button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const targetView = btn.getAttribute('data-view');
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById('view-' + targetView).classList.add('active');
+
+      document.getElementById('sidebar').classList.remove('open');
+      refreshIcons();
+    });
+  });
+
+  // Mobile Menu
+  document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+  });
+
+  // Theme Toggle
+  const themeToggle = document.getElementById('themeToggleBtn');
+  themeToggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('.theme-btn');
+    if(!btn) return;
+    const theme = btn.getAttribute('data-t');
+    document.documentElement.setAttribute('data-theme', theme);
+    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+
+  // Guide Filter Chips (Resumen)
+  document.querySelectorAll('#guideFilterResumen .chip-btn').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#guideFilterResumen .chip-btn').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      renderCompetencyList('compListResumen', chip.getAttribute('data-filter'));
+    });
+  });
+
+  // Guide Filter Chips (Full)
+  document.querySelectorAll('#guideFilterFull .chip-btn').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#guideFilterFull .chip-btn').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      renderCompetencyList('compListFull', chip.getAttribute('data-filter'));
+    });
+  });
+
+  // Roster Search Input
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    renderRoster(e.target.value);
+  });
+
+  // Click delegation for cards & rows
+  document.addEventListener('click', (e) => {
+    const barBox = e.target.closest('.bar-box');
+    if(barBox){
+      e.stopPropagation();
+      const action = barBox.getAttribute('data-action');
+      const compCode = barBox.getAttribute('data-comp');
+      openCompetencyModal(compCode, action);
+      return;
+    }
+
+    const compCard = e.target.closest('.comp-item-card');
+    if(compCard){
+      openCompetencyModal(compCard.getAttribute('data-comp'), 'all');
+      return;
+    }
+
+    const learnerRow = e.target.closest('tr[data-learner]');
+    if(learnerRow){
+      openLearnerModal(learnerRow.getAttribute('data-learner'));
+      return;
+    }
+  });
+
+  // Modal Navigation Triggers
+  const modalBackBtn = document.getElementById('modalBackBtn');
+  if(modalBackBtn) modalBackBtn.addEventListener('click', popModalState);
+
+  // Modal Close Handlers
+  document.getElementById('modalClose').addEventListener('click', closeMainModal);
+
+  document.getElementById('modalOverlay').addEventListener('click', (e) => {
+    if(e.target.id === 'modalOverlay'){
+      closeMainModal();
+    }
+  });
+
+  // Data Update Password Protection Engine
+  const ADMIN_PASSWORD = 'Dracula2026@';
+
+  const openUpdateModal = () => {
+    document.getElementById('adminPasswordInput').value = '';
+    document.getElementById('passwordErrorNotice').style.display = 'none';
+    document.getElementById('passwordModalOverlay').classList.add('open');
+    setTimeout(() => {
+      document.getElementById('adminPasswordInput').focus();
+    }, 200);
+    refreshIcons();
+  };
+
+  document.getElementById('passwordAuthForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const inputVal = document.getElementById('adminPasswordInput').value;
+    if (inputVal === ADMIN_PASSWORD) {
+      document.getElementById('passwordModalOverlay').classList.remove('open');
+      document.getElementById('excelModalOverlay').classList.add('open');
+      refreshIcons();
+    } else {
+      document.getElementById('passwordErrorNotice').style.display = 'block';
+      refreshIcons();
+    }
+  });
+
+  document.getElementById('passwordModalClose').addEventListener('click', () => {
+    document.getElementById('passwordModalOverlay').classList.remove('open');
+  });
+
+  document.getElementById('passwordCancelBtn').addEventListener('click', () => {
+    document.getElementById('passwordModalOverlay').classList.remove('open');
+  });
+
+  document.getElementById('passwordModalOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'passwordModalOverlay') {
+      document.getElementById('passwordModalOverlay').classList.remove('open');
+    }
+  });
+
+  document.getElementById('togglePasswordVisibilityBtn').addEventListener('click', () => {
+    const input = document.getElementById('adminPasswordInput');
+    input.type = input.type === 'password' ? 'text' : 'password';
+  });
+
+  const headerUpdateBtn = document.getElementById('openUpdateModalBtn');
+  if(headerUpdateBtn) headerUpdateBtn.addEventListener('click', openUpdateModal);
+
+  const sidebarUpdateBtn = document.getElementById('sidebarUpdateBtn');
+  if(sidebarUpdateBtn) sidebarUpdateBtn.addEventListener('click', openUpdateModal);
+
+  // Drive Sync inside Modal
+  const syncModalBtn = document.getElementById('syncDriveModalBtn');
+  if(syncModalBtn) syncModalBtn.addEventListener('click', syncWithGoogleDrive);
+  
+  document.getElementById('excelModalClose').addEventListener('click', () => {
+    document.getElementById('excelModalOverlay').classList.remove('open');
+  });
+  
+  document.getElementById('excelModalOverlay').addEventListener('click', (e) => {
+    if(e.target.id === 'excelModalOverlay'){
+      document.getElementById('excelModalOverlay').classList.remove('open');
+    }
+  });
+
+  // File Inputs
+  document.getElementById('zajunaFileInput').addEventListener('change', (e) => {
+    if(e.target.files.length > 0) handleFileSelect(e.target.files[0], 'zajuna');
+  });
+
+  document.getElementById('sofiaFileInput').addEventListener('change', (e) => {
+    if(e.target.files.length > 0) handleFileSelect(e.target.files[0], 'sofia');
+  });
+
+  // Dropzone drag & drop support
+  ['zajunaDropzone', 'sofiaDropzone'].forEach(id => {
+    const dz = document.getElementById(id);
+    const fileType = id === 'zajunaDropzone' ? 'zajuna' : 'sofia';
+    
+    dz.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dz.classList.add('dragover');
+    });
+
+    dz.addEventListener('dragleave', () => {
+      dz.classList.remove('dragover');
+    });
+
+    dz.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dz.classList.remove('dragover');
+      if(e.dataTransfer.files.length > 0){
+        handleFileSelect(e.dataTransfer.files[0], fileType);
+      }
+    });
+  });
+
+  // Process Files Button
+  document.getElementById('processExcelFilesBtn').addEventListener('click', processExcelReports);
+
+  // Reset Button
+  document.getElementById('resetDefaultDataBtn').addEventListener('click', () => {
+    if(confirm('¿Deseas restablecer los datos a los valores iniciales predeterminados?')){
+      localStorage.removeItem('adso_dashboard_data_v2');
+      location.reload();
+    }
+  });
+
+});
+
+/* ==========================================================================
+   GOOGLE DRIVE LIVE SYNC & EXCEL IMPORTER LOGIC
+   ========================================================================== */
+const GOOGLE_DRIVE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzLPqWFKbIS9kKTmzIevleYBBY0yCwTxQSMXwmAfRZQ2n8s8GMHkTiA9TDmyCHpW-ae/exec';
+
+async function syncWithGoogleDrive() {
+  const notice = document.getElementById('excelProcessNotice');
+  const modal = document.getElementById('excelModalOverlay');
+  modal.classList.add('open');
+  notice.style.display = 'block';
+  notice.style.background = 'var(--bg-card)';
+  notice.style.color = 'var(--accent-primary)';
+  notice.innerHTML = `<i data-lucide="loader-2"></i> Conectando con Google Drive y sincronizando datos...`;
+  refreshIcons();
+
+  try {
+    const response = await fetch(GOOGLE_DRIVE_SCRIPT_URL);
+    if (!response.ok) {
+      throw new Error(`Error de acceso (${response.status}). Asegúrate que 'Quién tiene acceso' esté en 'Cualquiera' en la implementación de Google Apps Script.`);
+    }
+    const data = await response.json();
+
+    if (!data.zajuna || !data.sofia) {
+      throw new Error("Respuesta no válida de Google Drive. Se esperaban las pestañas 'Zajuna' y 'SOFIA'.");
+    }
+
+    let currentLearnersData = JSON.parse(JSON.stringify(LEARNERS));
+
+    // Process SOFIA rows from Google Drive
+    const sofiaRows = data.sofia;
+    if (sofiaRows.length > 1) {
+      for (let i = 1; i < sofiaRows.length; i++) {
+        const r = sofiaRows[i];
+        if (!r || r.length < 8) continue;
+        const nom = (r[2] || '').toString().trim();
+        const ape = (r[3] || '').toString().trim();
+        const est = (r[4] || '').toString().trim();
+        const compStr = (r[5] || '').toString().trim();
+        const rapStr = (r[6] || '').toString().trim();
+        const juicio = (r[7] || '').toString().trim();
+
+        if (est !== 'EN FORMACION') continue;
+
+        const normFull = normalizeStr(`${nom} ${ape}`);
+        const canonicalName = NORM_14_MAP[normFull];
+        if (!canonicalName) continue;
+
+        let matchedCompCode = null;
+        for (const [sofiaId, code] of Object.entries(SOFIA_COMP_MAP)) {
+          if (compStr.includes(sofiaId)) {
+            matchedCompCode = code;
+            break;
+          }
+        }
+        if (!matchedCompCode) continue;
+
+        const rapMatch = rapStr.match(/-\s*(0[1-9])\s/);
+        if (!rapMatch) continue;
+        const rapSuffix = rapMatch[1];
+
+        if (!currentLearnersData[canonicalName][matchedCompCode]) {
+          currentLearnersData[canonicalName][matchedCompCode] = { zaj: [0,0], sofia: {} };
+        }
+        currentLearnersData[canonicalName][matchedCompCode].sofia[rapSuffix] = juicio;
+      }
+    }
+
+    // Process Zajuna rows from Google Drive
+    const zajunaRows = data.zajuna;
+    if (zajunaRows.length > 1) {
+      const headers = zajunaRows[0].map(h => (h || '').toString().trim());
+      const compColsMap = {};
+      COMP_ORDER.forEach(code => compColsMap[code] = []);
+
+      headers.forEach((h, idx) => {
+        if ((h.includes('Evidencia:') || h.includes('Foro:')) && !h.includes('Total')) {
+          COMP_ORDER.forEach(code => {
+            if (h.includes(code)) {
+              compColsMap[code].push(idx);
+            }
+          });
+        }
+      });
+
+      for (let i = 1; i < zajunaRows.length; i++) {
+        const r = zajunaRows[i];
+        if (!r || r.length < 3) continue;
+
+        const nom = (r[0] || '').toString().trim();
+        const ape = (r[1] || '').toString().trim();
+        if (!nom || !ape) continue;
+
+        const normFull = normalizeStr(`${nom} ${ape}`);
+        const canonicalName = NORM_14_MAP[normFull];
+        if (!canonicalName) continue;
+
+        COMP_ORDER.forEach(code => {
+          const colIndexes = compColsMap[code];
+          let approvedCount = 0;
+          const totalEvidences = colIndexes.length;
+
+          colIndexes.forEach(colIdx => {
+            const val = (r[colIdx] || '').toString().trim().toUpperCase();
+            if (val === 'A') approvedCount++;
+          });
+
+          if (totalEvidences > 0 && currentLearnersData[canonicalName][code]) {
+            currentLearnersData[canonicalName][code].zaj = [approvedCount, totalEvidences];
+          }
+        });
+      }
+    }
+
+    // Save and Update Dashboard
+    Object.assign(LEARNERS, currentLearnersData);
+    localStorage.setItem('adso_dashboard_data_v2', JSON.stringify(LEARNERS));
+
+    notice.style.background = 'var(--good-soft)';
+    notice.style.color = 'var(--good)';
+    notice.innerHTML = `<i data-lucide="check-circle-2"></i> ¡Sincronizado con Google Drive exitosamente para los 14 aprendices!`;
+    refreshIcons();
+
+    renderDashboard();
+
+    setTimeout(() => {
+      modal.classList.remove('open');
+    }, 1500);
+
+  } catch(err) {
+    console.error(err);
+    notice.style.background = 'var(--bad-soft)';
+    notice.style.color = 'var(--bad)';
+    notice.innerHTML = `<i data-lucide="alert-circle"></i> Error al sincronizar: ${err.message}`;
+    refreshIcons();
+  }
+}
+
+let rawZajunaWorkbook = null;
+let rawSofiaWorkbook = null;
+
+const SOFIA_COMP_MAP = {
+  '38392': '220501092',
+  '38376': '220501093',
+  '37371': '220501046',
+  '37714': '240202501',
+  '38367': '220501094',
+  '38560': '240201528',
+  '37801': '220201501',
+  '38362': '220501095',
+  '37802': '240201524',
+  '38199': '240201064'
+};
+
+
+
+function normalizeStr(str) {
+  if (!str) return '';
+  return str.toString().toLowerCase().trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+const NORM_14_MAP = {};
+INITIAL_14_NAMES.forEach(n => {
+  NORM_14_MAP[normalizeStr(n)] = n;
+});
+
+// Auto-restore saved data on page load
+(() => {
+  const saved = localStorage.getItem('adso_dashboard_data_v2');
+  if(saved){
+    try {
+      const parsed = JSON.parse(saved);
+      Object.assign(LEARNERS, parsed);
+    } catch(e) {
+      console.error("Error loading saved Excel data:", e);
+    }
+  }
+})();
+
+function handleFileSelect(file, type) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, {type: 'array'});
+    
+    if (type === 'zajuna') {
+      rawZajunaWorkbook = workbook;
+      document.getElementById('zajunaStatus').innerHTML = `<span style="color:var(--good); font-weight:700;">✓ Archivo listo: ${file.name}</span>`;
+      document.getElementById('zajunaDropzone').style.borderColor = 'var(--good)';
+    } else if (type === 'sofia') {
+      rawSofiaWorkbook = workbook;
+      document.getElementById('sofiaStatus').innerHTML = `<span style="color:var(--good); font-weight:700;">✓ Archivo listo: ${file.name}</span>`;
+      document.getElementById('sofiaDropzone').style.borderColor = 'var(--good)';
+    }
+
+    checkCanProcess();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function checkCanProcess() {
+  const btn = document.getElementById('processExcelFilesBtn');
+  if (rawZajunaWorkbook || rawSofiaWorkbook) {
+    btn.removeAttribute('disabled');
+  } else {
+    btn.setAttribute('disabled', 'true');
+  }
+}
+
+function processExcelReports() {
+  const notice = document.getElementById('excelProcessNotice');
+  notice.style.display = 'block';
+  notice.style.background = 'var(--bg-card)';
+  notice.style.color = 'var(--accent-primary)';
+  notice.innerHTML = `<i data-lucide="loader-2"></i> Procesando datos de los 14 aprendices activos...`;
+  refreshIcons();
+
+  setTimeout(() => {
+    try {
+      let currentLearnersData = JSON.parse(JSON.stringify(LEARNERS));
+
+      // 1. Process SOFIA if workbook uploaded
+      if (rawSofiaWorkbook) {
+        const sheetName = rawSofiaWorkbook.SheetNames[0];
+        const sheet = rawSofiaWorkbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
+
+        for (let i = 1; i < rows.length; i++) {
+          const r = rows[i];
+          if (!r || r.length < 8) continue;
+          
+          const nom = (r[2] || '').toString().trim();
+          const ape = (r[3] || '').toString().trim();
+          const est = (r[4] || '').toString().trim();
+          const compStr = (r[5] || '').toString().trim();
+          const rapStr = (r[6] || '').toString().trim();
+          const juicio = (r[7] || '').toString().trim();
+
+          if (est !== 'EN FORMACION') continue;
+
+          const normFull = normalizeStr(`${nom} ${ape}`);
+          const canonicalName = NORM_14_MAP[normFull];
+          if (!canonicalName) continue; // Filter strictly for 14 active learners
+
+          let matchedCompCode = null;
+          for (const [sofiaId, code] of Object.entries(SOFIA_COMP_MAP)) {
+            if (compStr.includes(sofiaId)) {
+              matchedCompCode = code;
+              break;
+            }
+          }
+          if (!matchedCompCode) continue;
+
+          const rapMatch = rapStr.match(/-\s*(0[1-9])\s/);
+          if (!rapMatch) continue;
+          const rapSuffix = rapMatch[1];
+
+          if (!currentLearnersData[canonicalName][matchedCompCode]) {
+            currentLearnersData[canonicalName][matchedCompCode] = { zaj: [0,0], sofia: {} };
+          }
+          currentLearnersData[canonicalName][matchedCompCode].sofia[rapSuffix] = juicio;
+        }
+      }
+
+      // 2. Process ZAJUNA if workbook uploaded
+      if (rawZajunaWorkbook) {
+        const sheetName = rawZajunaWorkbook.SheetNames[0];
+        const sheet = rawZajunaWorkbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
+
+        if (rows.length > 1) {
+          const headers = rows[0].map(h => (h || '').toString().trim());
+          
+          const compColsMap = {};
+          COMP_ORDER.forEach(code => compColsMap[code] = []);
+
+          headers.forEach((h, idx) => {
+            if ((h.includes('Evidencia:') || h.includes('Foro:')) && !h.includes('Total')) {
+              COMP_ORDER.forEach(code => {
+                if (h.includes(code)) {
+                  compColsMap[code].push(idx);
+                }
+              });
+            }
+          });
+
+          for (let i = 1; i < rows.length; i++) {
+            const r = rows[i];
+            if (!r || r.length < 3) continue;
+
+            const nom = (r[0] || '').toString().trim();
+            const ape = (r[1] || '').toString().trim();
+            if (!nom || !ape) continue;
+
+            const normFull = normalizeStr(`${nom} ${ape}`);
+            const canonicalName = NORM_14_MAP[normFull];
+            if (!canonicalName) continue; // Filter strictly for 14 active learners
+
+            COMP_ORDER.forEach(code => {
+              const colIndexes = compColsMap[code];
+              let approvedCount = 0;
+              const totalEvidences = colIndexes.length;
+
+              colIndexes.forEach(colIdx => {
+                const val = (r[colIdx] || '').toString().trim().toUpperCase();
+                if (val === 'A') approvedCount++;
+              });
+
+              if (totalEvidences > 0 && currentLearnersData[canonicalName][code]) {
+                currentLearnersData[canonicalName][code].zaj = [approvedCount, totalEvidences];
+              }
+            });
+          }
+        }
+      }
+
+      // Update global LEARNERS & save to localStorage
+      Object.assign(LEARNERS, currentLearnersData);
+      localStorage.setItem('adso_dashboard_data_v2', JSON.stringify(LEARNERS));
+
+      notice.style.background = 'var(--good-soft)';
+      notice.style.color = 'var(--good)';
+      notice.innerHTML = `<i data-lucide="check-circle-2"></i> ¡Datos procesados localmente! Guardando en Google Drive...`;
+      refreshIcons();
+
+      renderDashboard();
+
+      // Send POST request to Google Apps Script to auto-update Google Sheet in Drive
+      try {
+        fetch(GOOGLE_DRIVE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'update_learners', learners: currentLearnersData })
+        }).then(() => {
+          console.log("Sincronización en segundo plano enviada a Google Drive.");
+        }).catch(err => console.warn("Error opcional en POST Drive:", err));
+      } catch(e) {
+        console.warn("POST fetch exception:", e);
+      }
+
+      setTimeout(() => {
+        document.getElementById('excelModalOverlay').classList.remove('open');
+      }, 1500);
+
+    } catch (err) {
+      console.error(err);
+      notice.style.background = 'var(--bad-soft)';
+      notice.style.color = 'var(--bad)';
+      notice.innerHTML = `<i data-lucide="alert-circle"></i> Error al procesar los archivos: ${err.message}`;
+      refreshIcons();
+    }
+  }, 400);
+}
+</script>
+</body>
+</html>
+

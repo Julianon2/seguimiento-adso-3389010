@@ -1,0 +1,22 @@
+# Editor & IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Excel & Data reports
+*.xlsx
+*.xls
+*.csv
+*.tsv
+
+# Antigravity & Agent temporary data
+.gemini/
+.agents/
+scratch/
+tmp/
+temp/
+
+# OS metadata files
+.DS_Store
+Thumbs.db
