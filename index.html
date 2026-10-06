@@ -2494,6 +2494,7 @@ function openLearnerModal(name, isBackNav = false){
 document.addEventListener('DOMContentLoaded', () => {
 
   renderDashboard();
+  syncWithGoogleDrive(true); // Auto-fetch live data from Google Drive for GitHub Pages
 
   // Navigation Switcher
   document.querySelectorAll('.nav-button').forEach(btn => {
@@ -2541,6 +2542,15 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('#guideFilterFull .chip-btn').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
       renderCompetencyList('compListFull', chip.getAttribute('data-filter'));
+    });
+  });
+
+  // Phase Filter Chips (Resultados por Fase)
+  document.querySelectorAll('#phaseFilter .chip-btn').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#phaseFilter .chip-btn').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      renderPhasesView(chip.getAttribute('data-phase'));
     });
   });
 
@@ -2701,15 +2711,18 @@ document.addEventListener('DOMContentLoaded', () => {
    ========================================================================== */
 const GOOGLE_DRIVE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzLPqWFKbIS9kKTmzIevleYBBY0yCwTxQSMXwmAfRZQ2n8s8GMHkTiA9TDmyCHpW-ae/exec';
 
-async function syncWithGoogleDrive() {
+async function syncWithGoogleDrive(isQuiet = false) {
   const notice = document.getElementById('excelProcessNotice');
   const modal = document.getElementById('excelModalOverlay');
-  modal.classList.add('open');
-  notice.style.display = 'block';
-  notice.style.background = 'var(--bg-card)';
-  notice.style.color = 'var(--accent-primary)';
-  notice.innerHTML = `<i data-lucide="loader-2"></i> Conectando con Google Drive y sincronizando datos...`;
-  refreshIcons();
+
+  if (!isQuiet) {
+    modal.classList.add('open');
+    notice.style.display = 'block';
+    notice.style.background = 'var(--bg-card)';
+    notice.style.color = 'var(--accent-primary)';
+    notice.innerHTML = `<i data-lucide="loader-2"></i> Conectando con Google Drive y sincronizando datos...`;
+    refreshIcons();
+  }
 
   try {
     const response = await fetch(GOOGLE_DRIVE_SCRIPT_URL);
@@ -2813,23 +2826,26 @@ async function syncWithGoogleDrive() {
     Object.assign(LEARNERS, currentLearnersData);
     localStorage.setItem('adso_dashboard_data_v2', JSON.stringify(LEARNERS));
 
-    notice.style.background = 'var(--good-soft)';
-    notice.style.color = 'var(--good)';
-    notice.innerHTML = `<i data-lucide="check-circle-2"></i> ¡Sincronizado con Google Drive exitosamente para los 14 aprendices!`;
-    refreshIcons();
+    if (!isQuiet) {
+      notice.style.background = 'var(--good-soft)';
+      notice.style.color = 'var(--good)';
+      notice.innerHTML = `<i data-lucide="check-circle-2"></i> ¡Sincronizado con Google Drive exitosamente para los 14 aprendices!`;
+      refreshIcons();
+      setTimeout(() => {
+        modal.classList.remove('open');
+      }, 1500);
+    }
 
     renderDashboard();
 
-    setTimeout(() => {
-      modal.classList.remove('open');
-    }, 1500);
-
   } catch(err) {
     console.error(err);
-    notice.style.background = 'var(--bad-soft)';
-    notice.style.color = 'var(--bad)';
-    notice.innerHTML = `<i data-lucide="alert-circle"></i> Error al sincronizar: ${err.message}`;
-    refreshIcons();
+    if (!isQuiet) {
+      notice.style.background = 'var(--bad-soft)';
+      notice.style.color = 'var(--bad)';
+      notice.innerHTML = `<i data-lucide="alert-circle"></i> Error al sincronizar: ${err.message}`;
+      refreshIcons();
+    }
   }
 }
 
