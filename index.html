@@ -2320,16 +2320,23 @@ function openCompetencyModal(code, targetTab = 'all', isBackNav = false){
     html += `<div style="color:var(--good); font-size:13.5px; font-weight:600; padding:14px; background:var(--good-soft); border-radius:12px; display:flex; align-items:center; gap:8px; border:1px solid var(--good);"><i data-lucide="sparkles"></i> ¡Excelente! Los 14 aprendices han completado todas las evidencias en Zajuna.</div>`;
   } else {
     pendingZajuna.forEach(item => {
+      const missingCount = item.max - item.got;
       html += `
-        <div class="rap-detail-row" style="cursor:pointer;" onclick="openLearnerModal('${item.name}')">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div class="avatar-circle" style="width:30px; height:30px; font-size:11px;">${getInitials(item.name)}</div>
-            <span style="font-weight:700; color:var(--text-main);">${item.name}</span>
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px; margin-bottom:10px; cursor:pointer;" onclick="openLearnerModal('${item.name}')">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="avatar-circle" style="width:30px; height:30px; font-size:11px;">${getInitials(item.name)}</div>
+              <span style="font-weight:700; color:var(--text-main);">${item.name}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="num" style="font-weight:700; color:${colorForPct(item.pct)}">${item.got} / ${item.max} Evidencias (${item.pct}%)</span>
+              <i data-lucide="chevron-right" style="font-size:14px; opacity:0.6;"></i>
+            </div>
           </div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span class="num" style="font-weight:700; color:${colorForPct(item.pct)}">${item.got} / ${item.max} Evidencias (${item.pct}%)</span>
-            <span class="status-badge attention"><i data-lucide="clock"></i> En Progreso</span>
-            <i data-lucide="chevron-right" style="font-size:14px; opacity:0.6;"></i>
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+            <span class="status-badge attention" style="font-size:11px; padding:3px 8px; border:1px solid var(--border);">
+              <i data-lucide="clock"></i> Faltan ${missingCount} evidencia(s) por entregar/calificar en Zajuna
+            </span>
           </div>
         </div>
       `;
@@ -2414,34 +2421,42 @@ function openLearnerModal(name, isBackNav = false){
   const zp = pct(zg,zm), sp = pct(sg,sm);
 
   document.getElementById('modalName').textContent = name;
-  document.getElementById('modalDoc').textContent = `Aprendiz Activo · ADSO Ficha 3389010`;
+  document.getElementById('modalDoc').textContent = `Expediente del Aprendiz · ADSO Ficha 3389010`;
 
   let html = `
     <div class="stat-cards-grid">
       <div class="modal-stat-box">
-        <div class="lbl">Zajuna (10 Competencias)</div>
+        <div class="lbl"><i data-lucide="file-check-2"></i> Zajuna (10 Competencias)</div>
         <div class="val num" style="color:${colorForPct(zp)}">${zp}% (${zg}/${zm})</div>
       </div>
       <div class="modal-stat-box">
-        <div class="lbl">SOFIA Plus (Juicios Aprobados)</div>
+        <div class="lbl"><i data-lucide="graduation-cap"></i> SOFIA Plus (Juicios Aprobados)</div>
         <div class="val num" style="color:${colorForPct(sp)}">${sp}% (${sg}/${sm})</div>
       </div>
     </div>
 
-    <div class="modal-sub-title"><i data-lucide="list-checks"></i> Desglose de Evidencias en Zajuna</div>
+    <div class="modal-sub-title"><i data-lucide="list-checks"></i> Desglose de Evidencias en Zajuna para ${name}</div>
   `;
 
   COMP_ORDER.forEach(code => {
     const meta = COMP_META[code];
     const z = LEARNERS[name][code].zaj;
     const p = pct(z[0], z[1]);
+    const missingCount = z[1] - z[0];
+    const statusBadge = missingCount === 0 
+      ? `<span class="status-badge complete" style="font-size:11px; padding:2px 8px;"><i data-lucide="check-circle-2"></i> 100% Al Día (${z[0]}/${z[1]})</span>`
+      : `<span class="status-badge attention" style="font-size:11px; padding:2px 8px;"><i data-lucide="clock"></i> Faltan ${missingCount} evidencia(s) (${z[0]}/${z[1]})</span>`;
 
     html += `
-      <div class="rap-detail-row" style="cursor:pointer;" onclick="openCompetencyModal('${code}', 'all')">
-        <span class="rap-code">${code}</span>
-        <span class="rap-name-text">${meta.name}</span>
-        <span class="num" style="font-weight:700; color:${colorForPct(p)}">${z[0]}/${z[1]} Evidencias</span>
-        <i data-lucide="chevron-right" style="font-size:14px; opacity:0.6; margin-left:8px;"></i>
+      <div class="rap-detail-row" style="cursor:pointer;" onclick="openCompetencyModal('${code}', 'zajuna')">
+        <div style="display:flex; align-items:center; gap:10px; flex:1;">
+          <span class="rap-code">${code}</span>
+          <span class="rap-name-text">${meta.name}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          ${statusBadge}
+          <i data-lucide="chevron-right" style="font-size:14px; opacity:0.6;"></i>
+        </div>
       </div>
     `;
   });
