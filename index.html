@@ -2169,11 +2169,38 @@ function renderRoster(query){
 }
 
 /* ==========================================================================
-   MODALS ENGINE
+   MODALS ENGINE & EVIDENCE HELPER
    ========================================================================== */
-/* ==========================================================================
-   MODALS ENGINE & NAVIGATION HISTORY
-   ========================================================================== */
+function cleanEvName(rawHeader, fallbackIndex) {
+  if (!rawHeader) return `Evidencia EV0${fallbackIndex + 1}`;
+  let str = rawHeader.toString().trim();
+  const matchCode = str.match(/([A-Z0-9]+-[A-Z0-9]+-AA\d+-EV\d+|AA\d+-EV\d+|EV\d+)/i);
+  if (matchCode) {
+    return `Evidencia ${matchCode[1].toUpperCase()}`;
+  }
+  str = str.replace(/^Evidencia:\s*/i, '').replace(/^Foro:\s*/i, '').trim();
+  if (str.length > 30) str = str.substring(0, 30) + '...';
+  return str || `Evidencia EV0${fallbackIndex + 1}`;
+}
+
+function getZajunaEvidencesForLearner(name, code) {
+  const learnerComp = LEARNERS[name] && LEARNERS[name][code];
+  if (!learnerComp) return [];
+
+  if (learnerComp.zajEvidences && learnerComp.zajEvidences.length > 0) {
+    return learnerComp.zajEvidences;
+  }
+
+  const [got, max] = learnerComp.zaj || [0, 0];
+  const items = [];
+  for (let i = 1; i <= max; i++) {
+    const evCode = `EV0${i}`;
+    const status = i <= got ? 'APROBADO' : 'POR ENTREGAR';
+    items.push({ name: `Evidencia ${evCode}`, status });
+  }
+  return items;
+}
+
 let modalHistoryStack = [];
 let activeModalState = null;
 
@@ -2320,7 +2347,14 @@ function openCompetencyModal(code, targetTab = 'all', isBackNav = false){
     html += `<div style="color:var(--good); font-size:13.5px; font-weight:600; padding:14px; background:var(--good-soft); border-radius:12px; display:flex; align-items:center; gap:8px; border:1px solid var(--good);"><i data-lucide="sparkles"></i> ¡Excelente! Los 14 aprendices han completado todas las evidencias en Zajuna.</div>`;
   } else {
     pendingZajuna.forEach(item => {
-      const missingCount = item.max - item.got;
+      const evList = getZajunaEvidencesForLearner(item.name, code);
+      const pendingEvs = evList.filter(e => e.status !== 'APROBADO');
+      const evBadges = pendingEvs.map(e => 
+        `<span class="status-badge attention" style="font-size:11px; padding:3px 8px; border:1px solid var(--border);">
+          <i data-lucide="clock"></i> ${e.name}: Por Entregar
+        </span>`
+      ).join(' ');
+
       html += `
         <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px; margin-bottom:10px; cursor:pointer;" onclick="openLearnerModal('${item.name}')">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
@@ -2334,9 +2368,7 @@ function openCompetencyModal(code, targetTab = 'all', isBackNav = false){
             </div>
           </div>
           <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
-            <span class="status-badge attention" style="font-size:11px; padding:3px 8px; border:1px solid var(--border);">
-              <i data-lucide="clock"></i> Faltan ${missingCount} evidencia(s) por entregar/calificar en Zajuna
-            </span>
+            ${evBadges}
           </div>
         </div>
       `;
@@ -2442,20 +2474,31 @@ function openLearnerModal(name, isBackNav = false){
     const meta = COMP_META[code];
     const z = LEARNERS[name][code].zaj;
     const p = pct(z[0], z[1]);
-    const missingCount = z[1] - z[0];
-    const statusBadge = missingCount === 0 
-      ? `<span class="status-badge complete" style="font-size:11px; padding:2px 8px;"><i data-lucide="check-circle-2"></i> 100% Al Día (${z[0]}/${z[1]})</span>`
-      : `<span class="status-badge attention" style="font-size:11px; padding:2px 8px;"><i data-lucide="clock"></i> Faltan ${missingCount} evidencia(s) (${z[0]}/${z[1]})</span>`;
+    const evList = getZajunaEvidencesForLearner(name, code);
+
+    const evBadges = evList.map(e => {
+      const isOk = e.status === 'APROBADO';
+      const badgeClass = isOk ? 'complete' : 'attention';
+      const icon = isOk ? 'check-circle-2' : 'clock';
+      return `<span class="status-badge ${badgeClass}" style="font-size:11px; padding:3px 8px; border:1px solid var(--border);" title="${e.name}">
+        <i data-lucide="${icon}"></i> ${e.name}: ${isOk ? 'Aprobado' : 'Por Entregar'}
+      </span>`;
+    }).join(' ');
 
     html += `
-      <div class="rap-detail-row" style="cursor:pointer;" onclick="openCompetencyModal('${code}', 'zajuna')">
-        <div style="display:flex; align-items:center; gap:10px; flex:1;">
-          <span class="rap-code">${code}</span>
-          <span class="rap-name-text">${meta.name}</span>
+      <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px 16px; margin-bottom:10px; cursor:pointer;" onclick="openCompetencyModal('${code}', 'zajuna')">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+          <div>
+            <span class="rap-code">${code}</span>
+            <span style="font-weight:700; color:var(--text-main); font-size:14px; margin-left:6px;">${meta.name}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="num" style="font-weight:700; font-size:13px; color:${colorForPct(p)}">${z[0]}/${z[1]} Evidencias (${p}%)</span>
+            <i data-lucide="chevron-right" style="font-size:14px; opacity:0.6;"></i>
+          </div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px;">
-          ${statusBadge}
-          <i data-lucide="chevron-right" style="font-size:14px; opacity:0.6;"></i>
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+          ${evBadges}
         </div>
       </div>
     `;
@@ -2802,7 +2845,7 @@ async function syncWithGoogleDrive(isQuiet = false) {
         if ((h.includes('Evidencia:') || h.includes('Foro:')) && !h.includes('Total')) {
           COMP_ORDER.forEach(code => {
             if (h.includes(code)) {
-              compColsMap[code].push(idx);
+              compColsMap[code].push({ idx, name: cleanEvName(h, compColsMap[code].length) });
             }
           });
         }
@@ -2821,17 +2864,21 @@ async function syncWithGoogleDrive(isQuiet = false) {
         if (!canonicalName) continue;
 
         COMP_ORDER.forEach(code => {
-          const colIndexes = compColsMap[code];
+          const colInfoList = compColsMap[code];
           let approvedCount = 0;
-          const totalEvidences = colIndexes.length;
+          const totalEvidences = colInfoList.length;
+          const zajItems = [];
 
-          colIndexes.forEach(colIdx => {
-            const val = (r[colIdx] || '').toString().trim().toUpperCase();
-            if (val === 'A') approvedCount++;
+          colInfoList.forEach(colObj => {
+            const val = (r[colObj.idx] || '').toString().trim().toUpperCase();
+            const isApp = val === 'A';
+            if (isApp) approvedCount++;
+            zajItems.push({ name: colObj.name, status: isApp ? 'APROBADO' : 'POR ENTREGAR' });
           });
 
           if (totalEvidences > 0 && currentLearnersData[canonicalName][code]) {
             currentLearnersData[canonicalName][code].zaj = [approvedCount, totalEvidences];
+            currentLearnersData[canonicalName][code].zajEvidences = zajItems;
           }
         });
       }
@@ -3010,7 +3057,7 @@ function processExcelReports() {
             if ((h.includes('Evidencia:') || h.includes('Foro:')) && !h.includes('Total')) {
               COMP_ORDER.forEach(code => {
                 if (h.includes(code)) {
-                  compColsMap[code].push(idx);
+                  compColsMap[code].push({ idx, name: cleanEvName(h, compColsMap[code].length) });
                 }
               });
             }
@@ -3029,17 +3076,21 @@ function processExcelReports() {
             if (!canonicalName) continue; // Filter strictly for 14 active learners
 
             COMP_ORDER.forEach(code => {
-              const colIndexes = compColsMap[code];
+              const colInfoList = compColsMap[code];
               let approvedCount = 0;
-              const totalEvidences = colIndexes.length;
+              const totalEvidences = colInfoList.length;
+              const zajItems = [];
 
-              colIndexes.forEach(colIdx => {
-                const val = (r[colIdx] || '').toString().trim().toUpperCase();
-                if (val === 'A') approvedCount++;
+              colInfoList.forEach(colObj => {
+                const val = (r[colObj.idx] || '').toString().trim().toUpperCase();
+                const isApp = val === 'A';
+                if (isApp) approvedCount++;
+                zajItems.push({ name: colObj.name, status: isApp ? 'APROBADO' : 'POR ENTREGAR' });
               });
 
               if (totalEvidences > 0 && currentLearnersData[canonicalName][code]) {
                 currentLearnersData[canonicalName][code].zaj = [approvedCount, totalEvidences];
+                currentLearnersData[canonicalName][code].zajEvidences = zajItems;
               }
             });
           }
