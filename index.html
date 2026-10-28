@@ -3050,12 +3050,14 @@ function processExcelReports() {
   setTimeout(() => {
     try {
       let currentLearnersData = JSON.parse(JSON.stringify(LEARNERS));
+      let sofiaRawRows = null, zajunaRawRows = null; // filas originales para reescribir las hojas de Google
 
       // 1. Process SOFIA if workbook uploaded
       if (rawSofiaWorkbook) {
         const sheetName = rawSofiaWorkbook.SheetNames[0];
         const sheet = rawSofiaWorkbook.Sheets[sheetName];
         const rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
+        sofiaRawRows = rows;
 
         for (let i = 1; i < rows.length; i++) {
           const r = rows[i];
@@ -3100,6 +3102,7 @@ function processExcelReports() {
         const sheetName = rawZajunaWorkbook.SheetNames[0];
         const sheet = rawZajunaWorkbook.Sheets[sheetName];
         const rows = XLSX.utils.sheet_to_json(sheet, {header: 1});
+        zajunaRawRows = rows;
 
         if (rows.length > 1) {
           const headers = rows[0].map(h => (h || '').toString().trim());
@@ -3168,7 +3171,7 @@ function processExcelReports() {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'update_learners', learners: currentLearnersData })
+          body: JSON.stringify({ action: 'update_learners', learners: currentLearnersData, zajuna: zajunaRawRows, sofia: sofiaRawRows })
         }).then(() => {
           console.log("Sincronización en segundo plano enviada a Google Drive.");
         }).catch(err => console.warn("Error opcional en POST Drive:", err));
