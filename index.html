@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Seguimiento ADSO 3389010 — Dashboard Premium</title>
+<title>Seguimiento ADSO 3389010 — Dashboard</title>
 
 <!-- Modern Typography -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 
 <!-- Lucide Vector Icons CDN -->
 <script src="https://unpkg.com/lucide@latest"></script>
@@ -27,7 +27,7 @@
   --bg-card-hover: #1d273f;
   --bg-subtle: #222d48;
   --border: rgba(255, 255, 255, 0.08);
-  --border-glow: rgba(99, 102, 241, 0.35);
+  --border-glow: rgba(57,169,0, 0.35);
   
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
@@ -36,10 +36,10 @@
   --brand-sena: #39a900;
   --brand-sena-glow: rgba(57, 169, 0, 0.4);
   
-  --accent-primary: #6366f1;
+  --accent-primary: #0284c7;
   --accent-secondary: #8b5cf6;
-  --accent-soft: rgba(99, 102, 241, 0.15);
-  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --accent-soft: rgba(57,169,0, 0.15);
+  --accent-gradient: linear-gradient(135deg, #0284c7 0%, #8b5cf6 100%);
   
   --good: #10b981;
   --good-soft: rgba(16, 185, 129, 0.15);
@@ -62,7 +62,7 @@
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.25);
   --shadow-md: 0 8px 24px rgba(0,0,0,0.35);
   --shadow-lg: 0 20px 48px rgba(0,0,0,0.5);
-  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.25);
+  --shadow-glow: 0 0 30px rgba(57,169,0, 0.25);
 }
 
 :root[data-theme="light"] {
@@ -73,7 +73,7 @@
   --bg-card-hover: #f1f5f9;
   --bg-subtle: #f1f5f9;
   --border: #e2e8f0;
-  --border-glow: rgba(99, 102, 241, 0.25);
+  --border-glow: rgba(57,169,0, 0.25);
   
   --text-main: #0f172a;
   --text-muted: #475569;
@@ -81,7 +81,7 @@
   
   --accent-primary: #4f46e5;
   --accent-secondary: #7c3aed;
-  --accent-soft: rgba(79, 70, 229, 0.08);
+  --accent-soft: rgba(57,169,0, 0.08);
   
   --good: #059669;
   --good-soft: #ecfdf5;
@@ -453,7 +453,7 @@ h1, h2, h3, h4, .font-heading {
   right: -15%;
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+  background: radial-gradient(circle, rgba(57,169,0, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
   pointer-events: none;
 }
 
@@ -537,7 +537,7 @@ h1, h2, h3, h4, .font-heading {
   padding: 5px 14px;
   border-radius: 99px;
   width: fit-content;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(57,169,0, 0.2);
 }
 
 .hero-title {
@@ -673,7 +673,7 @@ h1, h2, h3, h4, .font-heading {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
   color: #ffffff;
-  box-shadow: 0 3px 12px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 3px 12px rgba(57,169,0, 0.35);
 }
 
 /* ==========================================================================
@@ -721,7 +721,7 @@ h1, h2, h3, h4, .font-heading {
   padding: 4px 10px;
   border-radius: 6px;
   margin-right: 10px;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(57,169,0, 0.2);
 }
 
 .comp-item-title {
@@ -847,7 +847,7 @@ h1, h2, h3, h4, .font-heading {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
   color: #ffffff;
-  box-shadow: 0 3px 12px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 3px 12px rgba(57,169,0, 0.35);
 }
 
 .modal-tab-content {
@@ -1189,7 +1189,7 @@ h1, h2, h3, h4, .font-heading {
   gap: 8px;
   background: var(--accent-soft);
   color: var(--accent-primary);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  border: 1px solid rgba(57,169,0, 0.25);
   padding: 9px 14px;
   border-radius: var(--radius-md);
   font-size: 12.5px;
@@ -1297,30 +1297,98 @@ h1, h2, h3, h4, .font-heading {
   .stat-cards-grid { grid-template-columns: 1fr; }
   .inst-brand { flex-wrap: wrap; }
 }
+
+/* ==========================================================================
+   DISEÑO DEL HUB (sidebar blanco, fondo Hueso, Verde SENA / LCS)
+   ========================================================================== */
+:root, :root[data-theme="light"] {
+  --hueso: #F4F2EC; --hueso-dark: #e5e1d4;
+  --sena-verde: #39a900; --sena-verde-dark: #236b00;
+  --lcs-verde: #018751;
+  --bg-app: var(--hueso);
+  --bg-surface: #ffffff;
+  --bg-surface-glass: rgba(255,255,255,0.88);
+  --bg-card: #ffffff;
+  --bg-card-hover: #faf9f5;
+  --bg-subtle: #efece3;
+  --border: rgba(226,221,204,0.95);
+  --border-glow: rgba(1,135,81,0.4);
+  --text-main: #0f172a; --text-muted: #334155; --text-faint: #64748b;
+  --accent-primary: #018751; --accent-secondary: #39a900;
+  --accent-soft: rgba(57,169,0,0.1);
+  --accent-gradient: linear-gradient(135deg,#39a900 0%,#018751 100%);
+  --good: #39a900; --good-soft: #f0fdf4;
+  --warn: #d97706; --warn-soft: #fff7ed;
+  --bad: #dc2626; --bad-soft: #fef2f2;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md: 0 10px 30px -10px rgba(15,23,42,0.07);
+  --shadow-lg: 0 20px 40px -12px rgba(15,23,42,0.14);
+  --shadow-glow: 0 8px 24px -6px rgba(57,169,0,0.3);
+  --sidebar-width: 260px;
+}
+body { background: var(--hueso); position: relative; }
+body::before { content:''; position:fixed; top:-120px; left:-100px; width:550px; height:550px; pointer-events:none; z-index:0;
+  background: radial-gradient(circle, rgba(57,169,0,0.09) 0%, rgba(57,169,0,0.01) 70%, transparent 100%); border-radius:50%; }
+body::after { content:''; position:fixed; top:15%; right:-150px; width:650px; height:650px; pointer-events:none; z-index:0;
+  background: radial-gradient(circle, rgba(2,132,199,0.08) 0%, rgba(2,132,199,0.01) 70%, transparent 100%); border-radius:50%; }
+.app-container, .main-wrapper { position: relative; z-index: 1; }
+h1, h2, h3, h4, .font-heading { font-family: 'Outfit','Plus Jakarta Sans',sans-serif; }
+
+/* Layout sin topbar */
+.app-container { min-height: 100vh; }
+.sidebar {
+  top: 0; height: 100vh; width: 260px; padding: 0;
+  background: #ffffff; border-right: 1px solid #e2e8f0;
+  box-shadow: 2px 0 20px rgba(15,23,42,0.04);
+  justify-content: space-between; overflow-y: auto;
+}
+.sidebar-header { padding: 16px 18px; margin: 0; border-bottom: 1px solid #e2e8f0; gap: 11px; }
+.sidebar-brand-icon { width:40px; height:40px; border-radius:10px; background: var(--sena-verde); color:#fff;
+  box-shadow: 0 2px 8px -2px rgba(57,169,0,0.4); }
+.sidebar-brand-icon svg { width:24px; height:24px; }
+.sidebar-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:800; color:#0f172a; line-height:1.25;
+  background:none; -webkit-text-fill-color: #0f172a; }
+.sidebar-subtitle { font-size:10px; color:#64748b; font-weight:600; text-transform:none; letter-spacing:0.3px; margin-top:2px; }
+.nav-group { padding: 14px 10px; gap: 2px; }
+.nav-button { position:relative; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; color:#475569; border:none; }
+.nav-button .nav-icon { font-size: 16px; color:#94a3b8; }
+.nav-button:hover { background:#f1f5f9; color:#0f172a; transform:none; }
+.nav-button:hover .nav-icon { color:#0f172a; }
+.nav-button.active { background: rgba(57,169,0,0.1); color: var(--sena-verde-dark); box-shadow:none; font-weight:700; border:none; }
+.nav-button.active::before { content:''; position:absolute; left:0; top:6px; bottom:6px; width:3.5px; background: var(--sena-verde); border-radius:0 4px 4px 0; }
+.nav-button.active .nav-icon { color: var(--sena-verde-dark); }
+.nav-button.active .nav-badge { background: var(--sena-verde); color:#fff; }
+.nav-badge { background:#f1f5f9; color:#64748b; font-size:10.5px; }
+
+.sidebar-footer { flex-direction:column; align-items:stretch; justify-content:flex-start; gap:8px; padding:12px 14px;
+  border-top:1px solid #e2e8f0; background:#f8fafc; font-size:10px; }
+.sidebar-corte-badge { display:flex; align-items:center; justify-content:space-between; background:rgba(255,107,0,0.08);
+  border:1px solid rgba(255,107,0,0.22); border-radius:6px; padding:5px 8px; font-size:10.5px; font-weight:700; color:#c2410c; }
+.btn-sidebar-excel { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; padding:9px 10px; border-radius:8px;
+  border:none; cursor:pointer; background: var(--sena-verde); color:#fff; font-weight:700; font-size:12px; font-family:inherit; margin:0; }
+.btn-sidebar-excel:hover { background: var(--sena-verde-dark); }
+.sidebar-hub-link { display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:700; color:#475569; text-decoration:none; padding:6px; border-radius:6px; }
+.sidebar-hub-link:hover { background:#e2e8f0; color:#0f172a; }
+
+/* Contenido: tarjetas blancas sobre fondo Hueso */
+.hero-card { background:#ffffff; border:1px solid var(--border); box-shadow: var(--shadow-md); }
+.hero-tag { background: rgba(57,169,0,0.1); color: var(--sena-verde-dark); border-color: rgba(57,169,0,0.3); }
+.kpi-card, .stat-card, .modal-stat-box { background:#ffffff; border:1px solid var(--border); box-shadow: var(--shadow-md); }
+.chip-btn.active { background: var(--sena-verde); border-color: var(--sena-verde); color:#fff; }
+
+/* Boton flotante movil (patron Hub) */
+.floating-sidebar-toggle { display:none; position:fixed; top:16px; left:16px; z-index:210; width:auto; margin:0; height:38px; padding:0 14px 0 10px;
+  background:#fff; border:1px solid #cbd5e1; border-radius:10px; box-shadow:0 6px 18px rgba(15,23,42,0.1); font-family:'Syne',sans-serif; font-size:12px; font-weight:700; }
+@media (max-width: 768px) {
+  .floating-sidebar-toggle { display:inline-flex; }
+  .sidebar.open ~ .main-wrapper .floating-sidebar-toggle { display:none; }
+  .main-wrapper { padding-top: 64px; }
+  .sidebar { top:0; }
+}
 </style>
 </head>
 <body>
 
-<!-- Institutional Header -->
-<header class="inst-header">
-  <div class="inst-brand">
-    <div class="sena-logo-badge">
-      <i data-lucide="shield-check"></i> SENA
-    </div>
-    <span class="inst-title">Centro Agroempresarial y Desarrollo Pecuario del Huila</span>
-    <span class="divider-dot">•</span>
-    <span class="inst-sub">ADSO Ficha 3389010</span>
-  </div>
-  <div class="inst-meta">
-    <button class="btn-header-excel" id="openUpdateModalBtn" style="background:linear-gradient(135deg, rgba(16,185,129,0.25), rgba(99,102,241,0.25)); border-color:rgba(16,185,129,0.4);">
-      <i data-lucide="refresh-cw"></i> Actualizar Datos
-    </button>
-    <div class="live-indicator">
-      <span class="pulse-dot"></span>
-      <span>Corte Actualizado (Oct 2026)</span>
-    </div>
-  </div>
-</header>
 
 <div class="app-container">
 
@@ -1328,11 +1396,19 @@ h1, h2, h3, h4, .font-heading {
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-brand-icon">
-        <i data-lucide="layers"></i>
+        <svg width="24" height="24" viewBox="0 0 64 62" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+            <g transform="translate(-377 -19)">
+              <path d="M409.164 19C412.922 19 415.992 22.09 415.992 25.8778 415.992 29.6656 412.932 32.7556 409.164 32.7556 405.397 32.7556 402.336 29.6656 402.336 25.8778 402.336 22.09 405.407 19 409.164 19"/>
+              <path d="M384.305 41.1884 384.305 41.2183C384.285 41.3379 384.275 41.4177 384.275 41.4675 384.275 41.8264 384.474 42.0855 384.873 42.265 385.282 42.4344 385.9 42.5241 386.747 42.5241 387.395 42.5241 387.893 42.4543 388.262 42.3148 388.631 42.1752 388.81 41.9759 388.81 41.7267 388.81 41.3479 388.082 41.0489 386.647 40.8096 386.478 40.7797 386.348 40.7598 386.268 40.7498 386.179 40.7299 386.039 40.71 385.86 40.6801 383.567 40.3013 382.092 39.8926 381.434 39.454 381.115 39.2347 380.876 38.9855 380.706 38.6965 380.547 38.4074 380.467 38.0785 380.467 37.7096 380.467 36.8125 380.995 36.1248 382.052 35.6563 383.109 35.1878 384.654 34.9486 386.677 34.9486 388.7 34.9486 390.166 35.1678 391.133 35.6064 392.1 36.045 392.578 36.7228 392.578 37.6399L392.578 37.7495 388.78 37.7495 388.78 37.7096C388.78 37.3907 388.591 37.1614 388.202 36.992 387.813 36.8325 387.255 36.7428 386.508 36.7428 385.929 36.7428 385.481 36.8026 385.182 36.9122 384.863 37.0318 384.713 37.1913 384.713 37.4006 384.713 37.7794 385.541 38.1084 387.195 38.3675 387.514 38.4174 387.764 38.4572 387.943 38.4871 389.119 38.6865 389.966 38.8559 390.465 38.9955 390.963 39.135 391.392 39.3045 391.761 39.4939 392.159 39.7132 392.478 39.9923 392.698 40.3312 392.917 40.6701 393.027 41.0389 393.027 41.4476 393.027 42.3746 392.448 43.0823 391.302 43.5907 390.156 44.0891 388.501 44.3383 386.348 44.3383 384.195 44.3383 382.67 44.099 381.723 43.6206 380.766 43.1421 380.298 42.3746 380.298 41.308L380.298 41.1685 384.305 41.1685ZM394.711 44.1987 394.711 35.0881 405.546 35.0881 405.546 37.0518 398.778 37.0518 398.778 38.5071 405.028 38.5071 405.028 40.4508 398.778 40.4508 398.778 42.2151 405.795 42.2151 405.795 44.2087 394.711 44.2087ZM407.5 44.1987 407.5 35.0881 412.643 35.0881 418.155 41.2084 418.155 35.0881 422.063 35.0881 422.063 44.1987 416.72 44.1987 411.387 38.0585 411.387 44.1987 407.49 44.1987ZM432.569 40.5604 430.625 37.2511 428.572 40.5604 432.579 40.5604ZM426.369 44.1987 422.292 44.1987 428.592 35.0881 433.107 35.0881 439.118 44.1987 434.592 44.1987 433.675 42.554 427.366 42.554 426.389 44.1987Z"/>
+              <path d="M389.309 76.3351 385.67 72.9161 396.735 53.6881C397.333 52.6415 396.585 51.3257 395.379 51.3257L377.267 51.3257 377.267 46.5113 406.413 46.5113 389.309 76.3351Z"/>
+              <path d="M428.701 76.3351 432.34 72.9161 421.275 53.6881C420.677 52.6415 421.425 51.3257 422.631 51.3257L440.743 51.3257 440.743 46.5113 411.597 46.5113 428.701 76.3351Z"/>
+              <path d="M408.965 51.5949C408.965 51.5949 409.005 51.5251 409.005 51.5251L425.432 78.7174 421.066 80.99 410.48 63.2373C409.852 62.1907 408.347 62.1907 407.729 63.2373 404.2 69.1981 397.213 80.99 397.213 80.99L392.947 78.8768C392.947 78.8768 408.088 53.09 408.965 51.5949"/>
+            </g>
+          </svg>
       </div>
       <div>
-        <div class="sidebar-title">Seguimiento ADSO</div>
-        <div class="sidebar-subtitle">Análisis, Planeación & Ejecución</div>
+        <div class="sidebar-title">Seguimiento ADSO 3389010</div>
+        <div class="sidebar-subtitle">SENA Virtual · Ficha 3389010</div>
       </div>
     </div>
 
@@ -1358,27 +1434,25 @@ h1, h2, h3, h4, .font-heading {
       </button>
     </nav>
 
-    <div class="sidebar-footer" style="flex-direction: column;">
-      <button class="btn-sidebar-excel" id="sidebarUpdateBtn" style="background:linear-gradient(135deg, #059669, #10b981); color:#fff; border-color:transparent; margin-bottom:12px;">
+    <div class="sidebar-footer">
+      <div class="sidebar-corte-badge">
+        <span>Corte actualizado</span><span>Oct 2026</span>
+      </div>
+      <button class="btn-sidebar-excel" id="sidebarUpdateBtn">
         <i data-lucide="refresh-cw"></i> Actualizar Datos
       </button>
-
-      <div class="theme-toggle" id="themeToggleBtn">
-        <button class="theme-btn active" data-t="dark">
-          <i data-lucide="moon"></i> Dark
-        </button>
-        <button class="theme-btn" data-t="light">
-          <i data-lucide="sun"></i> Light
-        </button>
-      </div>
+      <a class="sidebar-hub-link" href="https://juliantrujilo.github.io/materiales-adso-ga6/explorar.html">
+        <i data-lucide="arrow-left"></i> Volver al Hub
+      </a>
+      <div class="theme-toggle" id="themeToggleBtn" style="display:none"></div>
     </div>
   </aside>
 
   <!-- Main Content Area -->
   <main class="main-wrapper">
 
-    <button class="mobile-nav-toggle" id="mobileMenuBtn">
-      <i data-lucide="menu"></i> <span>Menú de Navegación</span>
+    <button class="mobile-nav-toggle floating-sidebar-toggle" id="mobileMenuBtn">
+      <i data-lucide="menu"></i> <span>Menú</span>
     </button>
 
     <!-- ================= RESUMEN VIEW ================= -->
@@ -1400,7 +1474,7 @@ h1, h2, h3, h4, .font-heading {
           <div class="ring-container">
             <svg viewBox="0 0 116 116">
               <circle class="ring-bg" cx="58" cy="58" r="46"></circle>
-              <circle class="ring-progress" id="ringSofia" cx="58" cy="58" r="46" stroke="#6366f1" stroke-dasharray="289" stroke-dashoffset="0"></circle>
+              <circle class="ring-progress" id="ringSofia" cx="58" cy="58" r="46" stroke="#0284c7" stroke-dasharray="289" stroke-dashoffset="0"></circle>
             </svg>
             <div class="ring-center-content">
               <div class="ring-value num" id="ringSofiaPct">—</div>
@@ -1597,7 +1671,7 @@ h1, h2, h3, h4, .font-heading {
     <div class="modal-body-content" style="padding: 24px;">
       
       <!-- Cloud Drive Sync Box -->
-      <div style="margin-bottom:18px; padding:16px; background:var(--accent-soft); border:1px solid rgba(99,102,241,0.25); border-radius:var(--radius-lg); display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+      <div style="margin-bottom:18px; padding:16px; background:var(--accent-soft); border:1px solid rgba(57,169,0,0.25); border-radius:var(--radius-lg); display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
         <div>
           <div style="font-weight:700; font-size:14px; color:var(--text-main); display:flex; align-items:center; gap:8px;">
             <i data-lucide="cloud" style="color:var(--good);"></i> Sincronización en la Nube con Google Drive
@@ -1982,7 +2056,7 @@ const PHASES_CONFIG = {
     subtitle: "Fundamentación de requisitos, modelado de procesos, propuesta técnica, TIC, matemáticas e inglés básico (Guías 1 y 2).",
     badge: "Guías 1 y 2",
     icon: "search-code",
-    color: "#6366f1",
+    color: "#0284c7",
     competencies: [
       { code: "220501092", guide: "Guía 1", raps: ["01", "02", "03", "04"] },
       { code: "220501093", guide: "Guía 1", raps: ["01", "02", "04"] },
@@ -2063,7 +2137,7 @@ function renderPhasesView(phaseFilter = 'all') {
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; padding-bottom:20px; border-bottom:1px solid var(--border); margin-bottom:24px;">
           <div>
             <div style="display:flex; align-items:center; gap:10px;">
-              <span class="hero-tag" style="background:var(--accent-soft); color:var(--accent-primary); border-color:rgba(99,102,241,0.3);">
+              <span class="hero-tag" style="background:var(--accent-soft); color:var(--accent-primary); border-color:rgba(57,169,0,0.3);">
                 <i data-lucide="layers"></i> ${phase.badge}
               </span>
               <h2 style="font-size:22px; font-weight:800; color:var(--text-main); margin:0;">${phase.title}</h2>
@@ -2744,7 +2818,7 @@ document.addEventListener('DOMContentLoaded', () => {
     input.type = input.type === 'password' ? 'text' : 'password';
   });
 
-  const headerUpdateBtn = document.getElementById('openUpdateModalBtn');
+  const headerUpdateBtn = null;
   if(headerUpdateBtn) headerUpdateBtn.addEventListener('click', openUpdateModal);
 
   const sidebarUpdateBtn = document.getElementById('sidebarUpdateBtn');
