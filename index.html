@@ -1509,6 +1509,8 @@ h1, h2, h3, h4, .font-heading { font-family: 'Outfit','Plus Jakarta Sans',sans-s
           <button class="chip-btn" data-filter="Guia 5">Guía 5</button>
           <button class="chip-btn" data-filter="Guia 6">Guía 6</button>
           <button class="chip-btn" data-filter="Guia 7">Guía 7</button>
+          <button class="chip-btn" data-filter="Guia 8">Guía 8</button>
+          <button class="chip-btn" data-filter="Guia 9">Guía 9</button>
         </div>
       </div>
 
@@ -1534,6 +1536,8 @@ h1, h2, h3, h4, .font-heading { font-family: 'Outfit','Plus Jakarta Sans',sans-s
           <button class="chip-btn" data-filter="Guia 5">Guía 5</button>
           <button class="chip-btn" data-filter="Guia 6">Guía 6</button>
           <button class="chip-btn" data-filter="Guia 7">Guía 7</button>
+          <button class="chip-btn" data-filter="Guia 8">Guía 8</button>
+          <button class="chip-btn" data-filter="Guia 9">Guía 9</button>
         </div>
       </div>
 
@@ -1741,7 +1745,7 @@ const COMP_META = {
   "220501095": {name:"Diseñar la solución de software", guide:"Guías 4-5", raps:["01", "02", "03", "04"]},
   "240201524": {name:"Desarrollar procesos de comunicación", guide:"Guía 4", raps:["01", "03", "04"]},
   "240201064": {name:"Orientar investigación formativa", guide:"Guía 5", raps:["01", "02", "03", "04"]},
-  "220501096": {name:"Desarrollar la solución de software", guide:"Guías 6 y 7", raps:["01", "02", "03", "04"]},
+  "220501096": {name:"Desarrollar la solución de software", guide:"Guías 6-9", raps:["01", "02", "03", "04"]},
   "230101507": {name:"Generar hábitos saludables (actividad física)", guide:"Guía 6", raps:["01", "02", "03", "04"]},
 };
 
@@ -1790,6 +1794,7 @@ const RAP_LABELS = {
   "220501096-02": "Construir la base de datos para el software a partir del modelo de datos.",
   "220501096-03": "Crear componentes front-end del software de acuerdo con el diseño.",
   "220501096-04": "Codificar el software de acuerdo con el diseño establecido.",
+  "220501096-05": "Realizar pruebas al software para verificar su funcionalidad.",
   "230101507-01": "Desarrollar habilidades psicomotrices en el contexto productivo y social.",
   "230101507-02": "Practicar hábitos saludables mediante fundamentos de nutrición e higiene.",
   "230101507-03": "Ejecutar actividades de acondicionamiento físico.",
@@ -1841,7 +1846,7 @@ const COMP_ORDER = ["220501092","220501093","220501046","240202501","220501094",
 // Solo Guías 6 y 7 para la competencia 220501096 (GA8/GA9 aún no se habilitan)
 // Guía 6: todas sus evidencias. Guía 7: solo la actividad AA1 (EV01 a EV05).
 const ZAJ_GUIDE_LIMIT = { "220501096": /GA6-|GA7-\d+-AA1-/ };
-const SOFIA_RAP_LIMIT = { "220501096": ["01","02","03","04"] };
+const SOFIA_RAP_LIMIT = { "220501096": ["01","02","03","04","05"] };
 function zajHeaderMatchesComp(h, code) {
   if (!h.includes(code)) return false;
   const lim = ZAJ_GUIDE_LIMIT[code];
@@ -1885,6 +1890,54 @@ function setGuideFilter(f){
   renderCompetencyList('compListResumen', f);
   renderCompetencyList('compListFull', f);
 }
+
+/* ---- RAPs (juicios SOFIA) por guía ----
+   Competencia 220501096 -> Guía 6: 02 y 03 · Guía 7: 01 y 04 · Guía 8: 04 · Guía 9: 05.
+   Para las demás competencias se deriva de PHASES_CONFIG. 'Todas' solo cuenta las guías habilitadas;
+   las guías 8 y 9 se consultan únicamente con su filtro (análisis). */
+const EXTRA_GUIDE_RAPS = { "220501096": { 8: ["04"], 9: ["05"] } };
+const ENABLED_GUIDES = [1,2,3,4,5,6,7];
+function guidesOfLabel(label){
+  const r = (label || '').match(/(\d+)\s*-\s*(\d+)/);
+  if(r){ const out=[]; for(let g=parseInt(r[1],10); g<=parseInt(r[2],10); g++) out.push(g); return out; }
+  const n = (label || '').match(/\d+/g);
+  return n ? n.map(x=>parseInt(x,10)) : [];
+}
+let _guideRapsMap = null;
+function guideRapsMap(){
+  if(_guideRapsMap) return _guideRapsMap;
+  const map = {};
+  Object.values(PHASES_CONFIG).forEach(ph => ph.competencies.forEach(item => {
+    guidesOfLabel(item.guide).forEach(g => {
+      map[item.code] = map[item.code] || {};
+      map[item.code][g] = Array.from(new Set((map[item.code][g] || []).concat(item.raps)));
+    });
+  }));
+  Object.entries(EXTRA_GUIDE_RAPS).forEach(([code, byGuide]) => {
+    map[code] = map[code] || {};
+    Object.entries(byGuide).forEach(([g, raps]) => { map[code][g] = raps; });
+  });
+  _guideRapsMap = map;
+  return map;
+}
+function allowedRaps(code, guideFilter){
+  const gf = guideFilter === undefined ? activeGuideFilter : guideFilter;
+  const byGuide = guideRapsMap()[code];
+  if(!byGuide) return null;                       // sin tabla: no se filtra
+  const m = (gf || 'all').match(/Guia (\d+)/i);
+  const guides = m ? [parseInt(m[1],10)] : ENABLED_GUIDES;
+  const set = new Set();
+  guides.forEach(g => (byGuide[g] || []).forEach(r => set.add(r)));
+  return set;
+}
+function sofiaOf(dict, code, guideFilter){
+  const allowed = allowedRaps(code, guideFilter);
+  return Object.entries(dict || {}).filter(([r]) => !allowed || allowed.has(r));
+}
+function rapsForView(code, guideFilter){
+  const allowed = allowedRaps(code, guideFilter);
+  return allowed ? Array.from(allowed).sort() : COMP_META[code].raps;
+}
 function sofiaRapAllowed(code, rap) {
   const lim = SOFIA_RAP_LIMIT[code];
   return lim ? lim.includes(rap) : true;
@@ -1907,19 +1960,19 @@ function learnerZajTotal(name){
 
 function learnerSofiaTotal(name){
   let ok=0,tot=0;
-  COMP_ORDER.forEach(c=>{ const s=LEARNERS[name][c].sofia; Object.values(s).forEach(v=>{ tot++; if(v==='APROBADO') ok++; }); });
+  COMP_ORDER.forEach(c=>{ sofiaOf(LEARNERS[name][c].sofia, c, 'all').forEach(([,v])=>{ tot++; if(v==='APROBADO') ok++; }); });
   return [ok,tot];
 }
 
-function compZajTotal(code){
+function compZajTotal(code, guideFilter){
   let got=0,max=0;
-  LEARNER_NAMES.forEach(n=>{ const z=zajOf(LEARNERS[n][code]); got+=z[0]; max+=z[1]; });
+  LEARNER_NAMES.forEach(n=>{ const z=zajOf(LEARNERS[n][code], guideFilter); got+=z[0]; max+=z[1]; });
   return [got,max];
 }
 
-function compSofiaTotal(code){
+function compSofiaTotal(code, guideFilter){
   let ok=0,tot=0;
-  LEARNER_NAMES.forEach(n=>{ Object.values(LEARNERS[n][code].sofia).forEach(v=>{ tot++; if(v==='APROBADO') ok++; }); });
+  LEARNER_NAMES.forEach(n=>{ sofiaOf(LEARNERS[n][code].sofia, code, guideFilter).forEach(([,v])=>{ tot++; if(v==='APROBADO') ok++; }); });
   return [ok,tot];
 }
 
@@ -1949,9 +2002,9 @@ function renderDashboard(){
   document.getElementById('ringSofiaPct').textContent = sp + '%';
   document.getElementById('ringSofia').style.strokeDashoffset = strokeMax * (1 - sp/100);
 
-  const compsAt100Zaj = COMP_ORDER.filter(c=>{ const [a,b]=compZajTotal(c); return b>0 && a===b; }).length;
+  const compsAt100Zaj = COMP_ORDER.filter(c=>{ const [a,b]=compZajTotal(c,'all'); return b>0 && a===b; }).length;
   let worst = null, worstPct = 101;
-  COMP_ORDER.forEach(c=>{ const [a,b]=compSofiaTotal(c); const p=pct(a,b); if(p<worstPct){worstPct=p; worst=c;} });
+  COMP_ORDER.forEach(c=>{ const [a,b]=compSofiaTotal(c,'all'); const p=pct(a,b); if(p<worstPct){worstPct=p; worst=c;} });
 
   const kpiHtml = `
     <div class="kpi-card kpi-good">
@@ -2041,6 +2094,9 @@ function renderCompetencyList(containerId, filterGuide){
     const [sg,sm] = compSofiaTotal(code);
     const zp = pct(zg,zm);
     const sp = pct(sg,sm);
+    const zTxt = zm === 0 ? '—' : zp + '%', sTxt = sm === 0 ? '—' : sp + '%';
+    const zFoot = zm === 0 ? 'Sin evidencias cargadas' : zg + '/' + zm + ' Entregables';
+    const sFoot = sm === 0 ? 'Sin juicios cargados' : sg + '/' + sm + ' Juicios RAPs';
 
     return `
       <div class="comp-item-card" data-comp="${code}">
@@ -2056,13 +2112,13 @@ function renderCompetencyList(containerId, filterGuide){
           <div class="bar-box zajuna-box" data-action="zajuna" data-comp="${code}">
             <div class="bar-box-header">
               <span class="bar-box-title"><i data-lucide="file-check-2"></i> Evidencias Zajuna</span>
-              <span class="bar-box-value" style="color:${colorForPct(zp)}">${zp}%</span>
+              <span class="bar-box-value" style="color:${zm === 0 ? 'var(--text-faint)' : colorForPct(zp)}">${zTxt}</span>
             </div>
             <div class="progress-track">
-              <div class="progress-fill" style="width:${zp}%; background:${colorForPct(zp)};"></div>
+              <div class="progress-fill" style="width:${zm === 0 ? 0 : zp}%; background:${colorForPct(zp)};"></div>
             </div>
             <div class="bar-box-footer">
-              <span>${zg}/${zm} Entregables</span>
+              <span>${zFoot}</span>
               <span>Pendientes <i data-lucide="chevron-right"></i></span>
             </div>
           </div>
@@ -2070,13 +2126,13 @@ function renderCompetencyList(containerId, filterGuide){
           <div class="bar-box sofia-box" data-action="sofia" data-comp="${code}">
             <div class="bar-box-header">
               <span class="bar-box-title"><i data-lucide="graduation-cap"></i> Juicios SOFIA Plus</span>
-              <span class="bar-box-value" style="color:${colorForPct(sp)}">${sp}%</span>
+              <span class="bar-box-value" style="color:${sm === 0 ? 'var(--text-faint)' : colorForPct(sp)}">${sTxt}</span>
             </div>
             <div class="progress-track">
-              <div class="progress-fill" style="width:${sp}%; background:${colorForPct(sp)};"></div>
+              <div class="progress-fill" style="width:${sm === 0 ? 0 : sp}%; background:${colorForPct(sp)};"></div>
             </div>
             <div class="bar-box-footer">
-              <span>${sg}/${sm} Juicios RAPs</span>
+              <span>${sFoot}</span>
               <span>Pendientes <i data-lucide="chevron-right"></i></span>
             </div>
           </div>
@@ -2433,10 +2489,10 @@ function openCompetencyModal(code, targetTab = 'all', isBackNav = false){
   // Compute pending learners for SOFIA Plus
   const pendingSofia = [];
   LEARNER_NAMES.forEach(n => {
-    const sDict = LEARNERS[n][code].sofia;
-    const missingRaps = Object.entries(sDict).filter(([r, status]) => status !== 'APROBADO').map(([r]) => r);
-    const approvedCount = Object.values(sDict).filter(v => v === 'APROBADO').length;
-    const totalRaps = Object.values(sDict).length;
+    const sEntries = sofiaOf(LEARNERS[n][code].sofia, code);
+    const missingRaps = sEntries.filter(([r, status]) => status !== 'APROBADO').map(([r]) => r);
+    const approvedCount = sEntries.filter(([r, v]) => v === 'APROBADO').length;
+    const totalRaps = sEntries.length;
     if(missingRaps.length > 0){
       pendingSofia.push({ name: n, missingRaps, approvedCount, totalRaps });
     }
@@ -2476,7 +2532,7 @@ function openCompetencyModal(code, targetTab = 'all', isBackNav = false){
       <div class="modal-sub-title"><i data-lucide="check-square"></i> Resultados de Aprendizaje (RAPs)</div>
   `;
 
-  meta.raps.forEach(suffix => {
+  rapsForView(code).forEach(suffix => {
     const rapKey = `${code}-${suffix}`;
     const label = RAP_LABELS[rapKey] || rapKey;
     let approvedCount = 0;
@@ -2630,6 +2686,7 @@ function openLearnerModal(name, isBackNav = false){
 
   COMP_ORDER.forEach(code => {
     const meta = COMP_META[code];
+    if(!guideMatchesFilter(meta.guide, activeGuideFilter)) return;
     const z = zajOf(LEARNERS[name][code]);
     const p = pct(z[0], z[1]);
     const evList = getZajunaEvidencesForLearner(name, code);
@@ -2666,12 +2723,13 @@ function openLearnerModal(name, isBackNav = false){
 
   COMP_ORDER.forEach(code => {
     const meta = COMP_META[code];
-    const sDict = LEARNERS[name][code].sofia;
-    const sApproved = Object.values(sDict).filter(v => v === 'APROBADO').length;
-    const sTotal = Object.values(sDict).length;
+    if(!guideMatchesFilter(meta.guide, activeGuideFilter)) return;
+    const sEntries = sofiaOf(LEARNERS[name][code].sofia, code);
+    const sApproved = sEntries.filter(([r, v]) => v === 'APROBADO').length;
+    const sTotal = sEntries.length;
     const sPct = pct(sApproved, sTotal);
 
-    const rapsHtml = Object.entries(sDict).map(([rapId, status]) => {
+    const rapsHtml = sEntries.map(([rapId, status]) => {
       const isOk = status === 'APROBADO';
       const badgeClass = isOk ? 'complete' : 'attention';
       const icon = isOk ? 'check-circle-2' : 'clock';
