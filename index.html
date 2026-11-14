@@ -1839,12 +1839,51 @@ INITIAL_14_NAMES.forEach(name => {
 const COMP_ORDER = ["220501092","220501093","220501046","240202501","220501094","240201528","220201501","220501095","240201524","240201064","220501096","230101507"];
 
 // Solo Guías 6 y 7 para la competencia 220501096 (GA8/GA9 aún no se habilitan)
-const ZAJ_GUIDE_LIMIT = { "220501096": /GA[67]-/ };
+// Guía 6: todas sus evidencias. Guía 7: solo la actividad AA1 (EV01 a EV05).
+const ZAJ_GUIDE_LIMIT = { "220501096": /GA6-|GA7-\d+-AA1-/ };
 const SOFIA_RAP_LIMIT = { "220501096": ["01","02","03","04"] };
 function zajHeaderMatchesComp(h, code) {
   if (!h.includes(code)) return false;
   const lim = ZAJ_GUIDE_LIMIT[code];
   return lim ? lim.test(h) : true;
+}
+
+/* ---- Filtro por guía y actividad (según la nomenclatura GAx-código-AAy-EVzz) ---- */
+let activeGuideFilter = 'all';
+function parseEvCode(name){
+  const m = (name || '').match(/GA(\d+)-\d+-AA(\d+)-EV(\d+)/i);
+  return m ? { guide: parseInt(m[1],10), aa: parseInt(m[2],10), ev: parseInt(m[3],10) } : null;
+}
+function evAllowed(name, guideFilter){
+  const info = parseEvCode(name);
+  if(!info) return true;
+  if(info.guide === 7 && info.aa !== 1) return false;          // Guía 7: solo AA1
+  const g = (guideFilter || 'all').match(/Guia (\d+)/i);
+  if(g && info.guide !== parseInt(g[1],10)) return false;        // filtro por guía
+  return true;
+}
+function zajItemsView(comp, guideFilter){
+  const gf = guideFilter === undefined ? activeGuideFilter : guideFilter;
+  return (comp.zajEvidences || []).filter(e => evAllowed(e.name, gf));
+}
+function zajOf(comp, guideFilter){
+  if(comp && comp.zajEvidences && comp.zajEvidences.length > 0){
+    const items = zajItemsView(comp, guideFilter);
+    return [items.filter(e => e.status === 'APROBADO').length, items.length];
+  }
+  return (comp && comp.zaj) || [0,0];
+}
+function phaseGuideKey(g){
+  const m = (g || '').match(/^Gu[ií]a (\d+)$/);
+  return m ? ('Guia ' + m[1]) : 'all';
+}
+function setGuideFilter(f){
+  activeGuideFilter = f;
+  ['guideFilterResumen','guideFilterFull'].forEach(id => {
+    document.querySelectorAll('#' + id + ' .chip-btn').forEach(c => c.classList.toggle('active', c.getAttribute('data-filter') === f));
+  });
+  renderCompetencyList('compListResumen', f);
+  renderCompetencyList('compListFull', f);
 }
 function sofiaRapAllowed(code, rap) {
   const lim = SOFIA_RAP_LIMIT[code];
@@ -1862,7 +1901,7 @@ function getInitials(name){
 
 function learnerZajTotal(name){
   let got=0,max=0;
-  COMP_ORDER.forEach(c=>{ const z=LEARNERS[name][c].zaj; got+=z[0]; max+=z[1]; });
+  COMP_ORDER.forEach(c=>{ const z=zajOf(LEARNERS[name][c], 'all'); got+=z[0]; max+=z[1]; });
   return [got,max];
 }
 
@@ -1874,7 +1913,7 @@ function learnerSofiaTotal(name){
 
 function compZajTotal(code){
   let got=0,max=0;
-  LEARNER_NAMES.forEach(n=>{ const z=LEARNERS[n][code].zaj; got+=z[0]; max+=z[1]; });
+  LEARNER_NAMES.forEach(n=>{ const z=zajOf(LEARNERS[n][code]); got+=z[0]; max+=z[1]; });
   return [got,max];
 }
 
@@ -1945,8 +1984,8 @@ function renderDashboard(){
   `;
   document.getElementById('kpiRow').innerHTML = kpiHtml;
 
-  renderCompetencyList('compListResumen', 'all');
-  renderCompetencyList('compListFull', 'all');
+  renderCompetencyList('compListResumen', activeGuideFilter);
+  renderCompetencyList('compListFull', activeGuideFilter);
   renderRoster('');
   renderPhasesView('all');
   refreshIcons();
@@ -2115,7 +2154,7 @@ function renderPhasesView(phaseFilter = 'all') {
       const targetRaps = item.raps;
 
       LEARNER_NAMES.forEach(n => {
-        const z = LEARNERS[n][code].zaj;
+        const z = zajOf(LEARNERS[n][code], phaseGuideKey(item.guide));
         pZajGot += z[0];
         pZajMax += z[1];
 
@@ -2307,7 +2346,7 @@ function getZajunaEvidencesForLearner(name, code) {
   if (!learnerComp) return [];
 
   if (learnerComp.zajEvidences && learnerComp.zajEvidences.length > 0) {
-    return learnerComp.zajEvidences;
+    return zajItemsView(learnerComp);
   }
 
   const [got, max] = learnerComp.zaj || [0, 0];
@@ -2385,7 +2424,7 @@ function openCompetencyModal(code, targetTab = 'all', isBackNav = false){
   // Compute pending learners for Zajuna
   const pendingZajuna = [];
   LEARNER_NAMES.forEach(n => {
-    const z = LEARNERS[n][code].zaj;
+    const z = zajOf(LEARNERS[n][code]);
     if(z[0] < z[1]){
       pendingZajuna.push({ name: n, got: z[0], max: z[1], pct: pct(z[0], z[1]) });
     }
@@ -2591,7 +2630,7 @@ function openLearnerModal(name, isBackNav = false){
 
   COMP_ORDER.forEach(code => {
     const meta = COMP_META[code];
-    const z = LEARNERS[name][code].zaj;
+    const z = zajOf(LEARNERS[name][code]);
     const p = pct(z[0], z[1]);
     const evList = getZajunaEvidencesForLearner(name, code);
 
@@ -2707,18 +2746,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Guide Filter Chips (Resumen)
   document.querySelectorAll('#guideFilterResumen .chip-btn').forEach(chip => {
     chip.addEventListener('click', () => {
-      document.querySelectorAll('#guideFilterResumen .chip-btn').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      renderCompetencyList('compListResumen', chip.getAttribute('data-filter'));
+      setGuideFilter(chip.getAttribute('data-filter'));
     });
   });
 
   // Guide Filter Chips (Full)
   document.querySelectorAll('#guideFilterFull .chip-btn').forEach(chip => {
     chip.addEventListener('click', () => {
-      document.querySelectorAll('#guideFilterFull .chip-btn').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      renderCompetencyList('compListFull', chip.getAttribute('data-filter'));
+      setGuideFilter(chip.getAttribute('data-filter'));
     });
   });
 
